@@ -11,26 +11,32 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter
-@Builder(toBuilder = true)
 @EqualsAndHashCode
+@Builder(toBuilder = true)
 @ToString
-public class Film {
+public class User {
 
     private String name;
-    private LocalDate releaseDate;
-    private double duration;
+
+    private LocalDate birthday;
+
+    private String login;
+
+    private String email;
 
     @Builder.Default
     private UUID id = UUID.randomUUID();
 
     @JsonCreator
-    public Film(@JsonProperty("name") String name,
-                @JsonProperty("releaseDate") LocalDate releaseDate,
-                @JsonProperty("duration") double duration,
+    public User(@JsonProperty("name") String name,
+                @JsonProperty("birthday") LocalDate birthday,
+                @JsonProperty("login") String login,
+                @JsonProperty("email") String email,
                 @JsonProperty("id") UUID id) {
         this.name = name;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
+        this.birthday = birthday;
+        this.login = login;
+        this.email = email;
         this.id = id;
     }
 }
