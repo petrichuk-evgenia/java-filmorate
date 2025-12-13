@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.yandex.practicum.filmorate.errorresp.ValidationErrorResponse;
+import ru.yandex.practicum.filmorate.error.ValidationErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import utils.JsonUtils;
 
@@ -22,9 +22,11 @@ public class FilmControllerTests extends BaseTest {
     public void addValidFilmTest() throws IOException, InterruptedException {
         Film filmToAdd = Film.builder()
                 .name("1")
-                .description("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111")
+                .description("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                        + "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                        + "1111111111111111111111111111")
                 .releaseDate(LocalDate.of(1895, 12, 28))
-                .duration(1.5)
+                .duration(1)
                 .build();
 
         HttpRequest req = HttpRequest.newBuilder()
@@ -45,7 +47,7 @@ public class FilmControllerTests extends BaseTest {
                 .name("1")
                 .description("description")
                 .releaseDate(LocalDate.of(2025, 1, 1))
-                .duration(1.5)
+                .duration(1)
                 .build();
 
         HttpRequest req1 = HttpRequest.newBuilder()
@@ -53,11 +55,14 @@ public class FilmControllerTests extends BaseTest {
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.getDtoAsJsonString(filmToAdd)))
                 .build();
-        Film addedFilm = JsonUtils.convertFromJson(client.send(req1, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)).body(), Film.class);
+        Film addedFilm = JsonUtils.convertFromJson(client.send(req1,
+                HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)).body(), Film.class);
         Assert.assertTrue(filmToAdd.equals(addedFilm), "Фильм добавлен некорректно");
 
         Film filmToUpdate = addedFilm.toBuilder().name("11")
-                .description("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111")
+                .description("111111111111111111111111111111111" +
+                        "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                        + "111111111111111111111111111111111111111111111111111111111111111111111111111")
                 .releaseDate(LocalDate.of(1895, 12, 28))
                 .duration(1).build();
 
@@ -78,7 +83,7 @@ public class FilmControllerTests extends BaseTest {
         Film filmToAdd = Film.builder()
                 .name("1")
                 .releaseDate(LocalDate.of(1895, 12, 28))
-                .duration(1.5)
+                .duration(1)
                 .build();
 
         HttpRequest req1 = HttpRequest.newBuilder()
@@ -121,7 +126,9 @@ public class FilmControllerTests extends BaseTest {
     public void addInvalidFilmTest() throws IOException, InterruptedException {
         Film filmToAdd = Film.builder()
                 .name("")
-                .description("111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111")
+                .description("11111111111111111111111111111111111111111111111111111111111111111111111111111111111" +
+                        "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111" +
+                        "111111111111111111111111111111")
                 .releaseDate(LocalDate.of(1895, 12, 27))
                 .duration(0)
                 .build();
@@ -147,7 +154,7 @@ public class FilmControllerTests extends BaseTest {
         Film filmToAdd = Film.builder()
                 .name("1")
                 .releaseDate(LocalDate.of(2025, 1, 1))
-                .duration(1.5)
+                .duration(1)
                 .build();
 
         HttpRequest req1 = HttpRequest.newBuilder()
@@ -155,7 +162,8 @@ public class FilmControllerTests extends BaseTest {
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.getDtoAsJsonString(filmToAdd)))
                 .build();
-        Film addedFilm = JsonUtils.convertFromJson(client.send(req1, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)).body(), Film.class);
+        Film addedFilm = JsonUtils.convertFromJson(client.send(req1, HttpResponse.BodyHandlers
+                .ofString(StandardCharsets.UTF_8)).body(), Film.class);
         Assert.assertTrue(filmToAdd.equals(addedFilm), "Фильм добавлен некорректно");
 
         Film filmToUpdate = addedFilm.toBuilder()

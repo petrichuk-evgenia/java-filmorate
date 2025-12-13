@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.errorresp;
+package ru.yandex.practicum.filmorate.error;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

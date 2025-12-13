@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.errorresp.ValidationErrorResponse;
+import ru.yandex.practicum.filmorate.error.ValidationErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import utils.JsonUtils;
 
@@ -36,7 +36,6 @@ public class FilmController extends BaseController {
     @PutMapping("/films/{id}")
     public ResponseEntity<String> updateFilm(@PathVariable int id, @RequestBody Film film) {
         if (validate(film, "")) {
-            films.remove(id);
             Film updatedFilm = film.toBuilder().id(id).build();
             films.put(id, updatedFilm);
             log.info("Изменен фильм {}", films.get(film.getId()));
@@ -55,7 +54,6 @@ public class FilmController extends BaseController {
         if (validate(film, filmString)) {
             int id = film.getId();
             if (films.containsKey(id)) {
-                films.remove(id);
                 Film updatedFilm = film.toBuilder().id(id).build();
                 films.put(id, updatedFilm);
                 log.info("Изменен фильм {}", films.get(film.getId()));

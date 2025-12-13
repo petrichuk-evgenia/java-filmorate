@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.yandex.practicum.filmorate.errorresp.ValidationErrorResponse;
+import ru.yandex.practicum.filmorate.error.ValidationErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
 import utils.JsonUtils;
 
@@ -57,7 +57,8 @@ public class UserControllerTests extends BaseTest {
 
         User addedUser = JsonUtils.convertFromJson(resp.body(), User.class);
         Assert.assertEquals(resp.statusCode(), 201, "Статус POST /users должен быть 201");
-        Assert.assertTrue(addedUser.equals(userToAdd.toBuilder().name(userToAdd.getLogin()).build()), "Пользователь добавлен некорректно");
+        Assert.assertTrue(addedUser.equals(userToAdd.toBuilder().name(userToAdd.getLogin()).build()),
+                "Пользователь добавлен некорректно");
     }
 
     @Test
@@ -78,7 +79,8 @@ public class UserControllerTests extends BaseTest {
 
         User addedUser = JsonUtils.convertFromJson(resp1.body(), User.class);
         Assert.assertEquals(resp1.statusCode(), 201, "Статус POST /users должен быть 201");
-        Assert.assertTrue(addedUser.equals(userToAdd.toBuilder().name(userToAdd.getLogin()).build()), "Пользователь добавлен некорректно");
+        Assert.assertTrue(addedUser.equals(userToAdd.toBuilder().name(userToAdd.getLogin()).build()),
+                "Пользователь добавлен некорректно");
 
         User userToUpdate = addedUser.toBuilder()
                 .name("Eva_upd")
@@ -207,7 +209,8 @@ public class UserControllerTests extends BaseTest {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/users"))
                 .header("Content-Type", "application/json; charset=UTF-8")
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.getDtoAsJsonString(userToAdd.toBuilder().login("Eva2").build())))
+                .POST(HttpRequest.BodyPublishers
+                        .ofString(JsonUtils.getDtoAsJsonString(userToAdd.toBuilder().login("Eva2").build())))
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));

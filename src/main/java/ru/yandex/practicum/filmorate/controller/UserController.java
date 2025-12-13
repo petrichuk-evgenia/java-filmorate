@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.errorresp.ValidationErrorResponse;
+import ru.yandex.practicum.filmorate.error.ValidationErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
 import utils.JsonUtils;
 
@@ -44,7 +44,6 @@ public class UserController extends BaseController {
             if (user.getName() == null || user.getName().isEmpty()) {
                 user = user.toBuilder().name(user.getLogin()).build();
             }
-            users.remove(id);
             User updatedUser = user.toBuilder().id(id).build();
             users.put(id, updatedUser);
             log.info("Изменен пользователь {}", users.get(user.getId()));
@@ -65,7 +64,6 @@ public class UserController extends BaseController {
                 user = user.toBuilder().name(user.getLogin()).build();
             }
             if (users.containsKey(id)) {
-                users.remove(id);
                 User updatedUser = user.toBuilder().id(id).build();
                 users.put(id, updatedUser);
                 log.info("Изменен пользователь {}", users.get(user.getId()));
