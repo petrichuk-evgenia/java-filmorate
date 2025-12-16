@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
+import io.restassured.http.ContentType;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
@@ -7,24 +8,21 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import utils.RestUtils;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BaseTest {
-    public static ConfigurableApplicationContext context;
-    public static HttpClient client = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(2))
-            .build();
+    protected static ConfigurableApplicationContext context;
+    protected static String baseUrl = "http://localhost:8080";
+    protected static Map<String, String> headers = new HashMap<>();
 
     @BeforeClass
     public static void setContext() {
+        RestUtils.setRestAssuredConfigHttp();
         context = SpringApplication.run(FilmorateApplication.class);
+        headers.put("Content-Type", "application/json; charset=UTF-8");
     }
 
     @AfterClass
@@ -33,25 +31,17 @@ public class BaseTest {
     }
 
     @BeforeMethod
-    public void setUp() throws IOException, InterruptedException {
-        HttpRequest req1 = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/films/clear"))
-                .header("Content-Type", "application/json; charset=UTF-8")
-                .GET()
-                .build();
-
-        client.send(req1, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-        HttpRequest req2 = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/users/clear"))
-                .header("Content-Type", "application/json; charset=UTF-8")
-                .GET()
-                .build();
-
-        client.send(req2, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+    public void setUp() {
+        RestUtils.get(getUrl("/films/clear"), ContentType.JSON.toString());
+        RestUtils.get(getUrl("/users/clear"), ContentType.JSON.toString());
     }
 
     @Test
     public void contextLoads() {
         Assert.assertNotNull(context, "Контекст не проинициализирован");
+    }
+
+    public String getUrl(String endpoint) {
+        return baseUrl + endpoint;
     }
 }
