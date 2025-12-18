@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.CustomValidationExpression;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
@@ -14,15 +13,10 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@Getter
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserStorage userStorage;
-
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
 
     public Map<String, String> addToFriends(int id, int friendId) {
         validateIds(id, friendId);

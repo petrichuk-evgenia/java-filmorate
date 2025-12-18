@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,49 +10,47 @@ import ru.yandex.practicum.filmorate.exceptions.CustomValidationExpression;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    private final UserStorage userStorage;
 
     @PostMapping("/users")
     public ResponseEntity<User> addUser(@Valid @RequestBody User user) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.getUserStorage().addUser(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userStorage.addUser(user));
     }
 
     @PutMapping("/users/{id}")
     public ResponseEntity<User> updateUser(@PathVariable int id, @Valid @RequestBody User user) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getUserStorage().updateUser(id, user));
+        return ResponseEntity.status(HttpStatus.OK).body(userStorage.updateUser(id, user));
     }
 
     @GetMapping("users")
     public ResponseEntity<List<User>> getUsers() {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getUserStorage().getAllUsers());
+        return ResponseEntity.status(HttpStatus.OK).body(userStorage.getAllUsers());
     }
 
     @GetMapping("/users/clear")
     public ResponseEntity<List<User>> clearUsers() {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getUserStorage().clearUsers());
+        return ResponseEntity.status(HttpStatus.OK).body(userStorage.clearUsers());
     }
 
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getUser(@Valid @PathVariable int id) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getUserStorage().getUser(id));
+        return ResponseEntity.status(HttpStatus.OK).body(userStorage.getUser(id));
     }
 
     @GetMapping("/users/{id}/friends")
     public ResponseEntity<List<User>> getUserFriends(@Valid @PathVariable int id) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getUsersByListIDs(userService.getUserStorage().getUser(id).getFriends().stream().toList()));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getUsersByListIDs(userStorage.getUser(id).getFriends().stream().toList()));
     }
 
     @PutMapping("/users/{id}/friends/{friendId}")
@@ -75,10 +73,10 @@ public class UserController {
     @PutMapping("/users")
     public ResponseEntity<User> updateUser(@Valid @RequestBody User user) {
         int id = user.getId();
-        if (userService.getUserStorage().getUsers().containsKey(id)) {
-            userService.getUserStorage().updateUser(id, user);
-            log.info("Изменен пользователь {}", userService.getUserStorage().getUsers().get(user.getId()));
-            return ResponseEntity.status(HttpStatus.OK).body(userService.getUserStorage().getUsers().get(user.getId()));
+        if (userStorage.getUsers().containsKey(id)) {
+            userStorage.updateUser(id, user);
+            log.info("Изменен пользователь {}", userStorage.getUsers().get(user.getId()));
+            return ResponseEntity.status(HttpStatus.OK).body(userStorage.getUsers().get(user.getId()));
         } else {
             throw new IdNotFoundException("Пользователь не найден");
         }
