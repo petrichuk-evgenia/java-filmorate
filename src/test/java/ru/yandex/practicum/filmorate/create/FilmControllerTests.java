@@ -1,17 +1,13 @@
 package ru.yandex.practicum.filmorate.create;
 
+import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.yandex.practicum.filmorate.BaseTest;
 import ru.yandex.practicum.filmorate.model.Film;
-import utils.JsonUtils;
+import utils.RestUtils;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -19,28 +15,22 @@ import java.util.Map;
 public class FilmControllerTests extends BaseTest {
 
     @Test
-    public void addValidFilmTest() throws IOException, InterruptedException {
+    public void addValidFilmTest() {
         Film filmToAdd = Film.builder()
                 .name("1")
                 .description("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111")
                 .releaseDate(LocalDate.of(1895, 12, 28))
                 .duration(1)
                 .build();
-
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/films"))
-                .header("Content-Type", "application/json; charset=UTF-8")
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.getDtoAsJsonString(filmToAdd)))
-                .build();
-
-        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-        Film addedFilm = JsonUtils.convertFromJson(resp.body(), Film.class);
+        Response resp = RestUtils.post(getUrl("/films"), filmToAdd, headers);
+        Film addedFilm = resp.as(Film.class);
         Assert.assertEquals(resp.statusCode(), 201, "Статус POST /films должен быть 201");
+        filmToAdd.setId(addedFilm.getId());
         Assert.assertTrue(filmToAdd.equals(addedFilm), "Фильм добавлен некорректно");
     }
 
     @Test
-    public void addInvalidFilmTest() throws IOException, InterruptedException {
+    public void addInvalidFilmTest() {
         Film filmToAdd = Film.builder()
                 .name("")
                 .description("11")
@@ -48,22 +38,16 @@ public class FilmControllerTests extends BaseTest {
                 .duration(0)
                 .build();
 
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/films"))
-                .header("Content-Type", "application/json; charset=UTF-8")
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.getDtoAsJsonString(filmToAdd)))
-                .build();
-
-        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        Response resp = RestUtils.post(getUrl("/films"), filmToAdd, headers);
         Assert.assertEquals(resp.statusCode(), 400, "Статус POST /films должен быть 400");
-        Map<String, String> response = JsonUtils.convertFromJson(resp.body(), Map.class);
+        Map<String, String> response = resp.as(Map.class);
         Assert.assertTrue(response.get("duration").equals("Продолжительность фильма должна быть положительной"), "Валидация прошла некорректно");
         Assert.assertTrue(response.get("releaseDate").equals("Дата релиза должна быть не раньше 28 декабря 1895 года"), "Валидация прошла некорректно");
         Assert.assertTrue(response.get("name").equals("Название фильма не может быть null или пустым"), "Валидация прошла некорректно");
     }
 
     @Test
-    public void addInvalidFilmLongDescriptionZeroDurationTest() throws IOException, InterruptedException {
+    public void addInvalidFilmLongDescriptionZeroDurationTest() {
         Film filmToAdd = Film.builder()
                 .name("1")
                 .description("11111111111111111111111111111111111111111111111111111111111111111111111111111111111" +
@@ -73,15 +57,9 @@ public class FilmControllerTests extends BaseTest {
                 .duration(0)
                 .build();
 
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/films"))
-                .header("Content-Type", "application/json; charset=UTF-8")
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.getDtoAsJsonString(filmToAdd)))
-                .build();
-
-        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        Response resp = RestUtils.post(getUrl("/films"), filmToAdd, headers);
         Assert.assertEquals(resp.statusCode(), 400, "Статус POST /films должен быть 400");
-        Map<String, String> response = JsonUtils.convertFromJson(resp.body(), Map.class);
+        Map<String, String> response = resp.as(Map.class);
         Assert.assertTrue(response.get("description").equals("Описание фильма не должно быть больше 200 символов"), "Валидация прошла некорректно");
         Assert.assertTrue(response.get("duration").equals("Продолжительность фильма должна быть положительной"), "Валидация прошла некорректно");
     }

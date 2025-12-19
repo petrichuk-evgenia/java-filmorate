@@ -1,7 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
@@ -9,14 +7,16 @@ import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.annotations.ValidReleaseDate;
 
 import java.time.LocalDate;
-
-import static ru.yandex.practicum.filmorate.controller.FilmController.filmCounter;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
-@Builder(toBuilder = true)
 @EqualsAndHashCode
 @ToString
+@Setter
 public class Film {
+
+    private Set<User> likes;
 
     @NonNull
     @NotEmpty(message = "Название фильма не может быть null или пустым")
@@ -33,23 +33,14 @@ public class Film {
     @Min(value = 1, message = "Продолжительность фильма должна быть положительной")
     private long duration;
 
-    @Builder.Default
-    private int id = ++filmCounter;
+    private int id;
 
-    @JsonCreator
-    public Film(@JsonProperty("name") String name,
-                @JsonProperty("description") String description,
-                @JsonProperty("releaseDate") LocalDate releaseDate,
-                @JsonProperty("duration") long duration,
-                @JsonProperty("id") int id) {
+    @Builder(toBuilder = true)
+    public Film(@NonNull String name, String description, @NonNull LocalDate releaseDate, @NonNull long duration) {
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
-        if (id == 0) {
-            this.id = ++filmCounter;
-        } else {
-            this.id = id;
-        }
+        this.likes = new HashSet<>();
     }
 }

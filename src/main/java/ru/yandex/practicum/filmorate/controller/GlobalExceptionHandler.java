@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exceptions.CustomValidationExpression;
+import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,10 +37,18 @@ public class GlobalExceptionHandler {
         return errors;
     }
 
-    // Обработка пользовательских исключений (если будут)
+    // Обработка пользовательских исключений
     @ExceptionHandler(CustomValidationExpression.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleValidationException(CustomValidationExpression ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return error;
+    }
+
+    @ExceptionHandler(IdNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleNotFoundException(IdNotFoundException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return error;
