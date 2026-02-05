@@ -3,74 +3,66 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.CustomValidationExpression;
-import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
+@Validated
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/films")
 public class FilmController {
 
     private final FilmService filmService;
-    private final FilmStorage filmStorage;
 
-    @PostMapping("/films")
-    public ResponseEntity<Film> addFilm(@Valid @RequestBody Film film) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(filmStorage.addFilm(film));
+    @GetMapping
+    public List<Film> getAllFilms() {
+        log.info("GET /films - получение всех фильмов");
+        return filmService.getAllFilms();
     }
 
-    @PutMapping("/films/{id}")
-    public ResponseEntity<Film> updateFilm(@PathVariable int id, @Valid @RequestBody Film film) {
-        return ResponseEntity.status(HttpStatus.OK).body(filmStorage.updateFilm(id, film));
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable Long id) {
+        log.info("GET /films/{} - получение фильма по ID", id);
+        return filmService.getFilmById(id);
     }
 
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/films")
-    public ResponseEntity<List<Film>> getAllFilms() {
-        return ResponseEntity.status(HttpStatus.OK).body(filmStorage.getAllFilms());
+    @PostMapping
+    public Film createFilm(@Valid @RequestBody Film film) {
+        log.info("POST /films - создание нового фильма");
+        return filmService.createFilm(film);
     }
 
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/films/clear")
-    public ResponseEntity<List<Film>> clearFilms() {
-        return ResponseEntity.status(HttpStatus.OK).body(filmStorage.clearFilms());
+    @PutMapping
+    public Film updateFilm(@Valid @RequestBody Film film) {
+        log.info("PUT /films - обновление фильма с ID: {}", film.getId());
+        return filmService.updateFilm(film);
     }
 
-    @PutMapping("/films/{id}/like/{userId}")
-    public ResponseEntity<Map<String, String>> addLike(@Valid @PathVariable int id, @Valid @PathVariable int userId) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(filmService.addLike(id, userId));
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(
+            @PathVariable Long id,
+            @PathVariable Long userId) {
+        log.info("PUT /films/{}/like/{} - добавление лайка", id, userId);
+        filmService.addLike(id, userId);
     }
 
-    @DeleteMapping("/films/{id}/like/{userId}")
-    public ResponseEntity<Map<String, String>> deleteLike(@Valid @PathVariable int id, @Valid @PathVariable int userId) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(filmService.deleteLike(id, userId));
+    @DeleteMapping("/{id}/like/{userId}")
+    public void removeLike(
+            @PathVariable Long id,
+            @PathVariable Long userId) {
+        log.info("DELETE /films/{}/like/{} - удаление лайка", id, userId);
+        filmService.removeLike(id, userId);
     }
 
-    @GetMapping("/films/popular")
-    public ResponseEntity<List<Film>> getPopularFilms(@Valid @RequestParam int count) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(filmService.getFilmsByListIDs(filmService.getPopularFilms(count)));
-    }
-
-    //ЭТО реализовано, чтоб просто пройти ПР по тестам, которые противоречат логике, здравому смыслу и стандартам
-    //... Прошу понять и простить
-    @PutMapping("/films")
-    public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film) {
-        int id = film.getId();
-        if (filmStorage.getFilms().containsKey(id)) {
-            filmStorage.updateFilm(id, film);
-            log.info("Изменен фильм {}", filmStorage.getFilms().get(film.getId()));
-            return ResponseEntity.status(HttpStatus.OK).body(filmStorage.getFilms().get(id));
-        } else {
-            throw new IdNotFoundException("Фильм не найден");
-        }
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(
+            @RequestParam(defaultValue = "10") Integer count) {
+        log.info("GET /films/popular?count={} - получение популярных фильмов", count);
+        return filmService.getPopularFilms(count);
     }
 }

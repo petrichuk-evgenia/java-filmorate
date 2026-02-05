@@ -1,46 +1,39 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import lombok.*;
-import org.hibernate.validator.constraints.Length;
-import ru.yandex.practicum.filmorate.annotations.ValidReleaseDate;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+import lombok.Builder;
+import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
-@Getter
-@EqualsAndHashCode
-@ToString
-@Setter
+@Data
+@Builder
 public class Film {
+    private Long id;
 
-    private Set<User> likes;
-
-    @NonNull
-    @NotEmpty(message = "Название фильма не может быть null или пустым")
+    @NotBlank(message = "Название фильма не может быть пустым")
     private String name;
 
-    @Length(min = 0, max = 200, message = "Описание фильма не должно быть больше 200 символов")
-    private String description = "";
+    @Size(max = 200, message = "Максимальная длина описания — 200 символов")
+    private String description;
 
-    @NonNull
-    @ValidReleaseDate
+    @NotNull(message = "Дата релиза должна быть указана")
     private LocalDate releaseDate;
 
-    @NonNull
-    @Min(value = 1, message = "Продолжительность фильма должна быть положительной")
-    private long duration;
+    @Positive(message = "Продолжительность фильма должна быть положительным числом")
+    private int duration;
 
-    private int id;
+    private Mpa mpa;
 
-    @Builder(toBuilder = true)
-    public Film(@NonNull String name, String description, @NonNull LocalDate releaseDate, @NonNull long duration) {
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-        this.likes = new HashSet<>();
-    }
+    @Builder.Default
+    private Set<Genre> genres = new LinkedHashSet<>();
+
+    @Builder.Default
+    private Set<Long> likes = new HashSet<>();
 }

@@ -3,82 +3,72 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.CustomValidationExpression;
-import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
+@Validated
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/users")
 public class UserController {
-
     private final UserService userService;
-    private final UserStorage userStorage;
 
-    @PostMapping("/users")
-    public ResponseEntity<User> addUser(@Valid @RequestBody User user) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userStorage.addUser(user));
+    @GetMapping
+    public List<User> getAllUsers() {
+        log.info("GET /users - получение всех пользователей");
+        return userService.getAllUsers();
     }
 
-    @PutMapping("/users/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable int id, @Valid @RequestBody User user) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(userStorage.updateUser(id, user));
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Long id) {
+        log.info("GET /users/{} - получение пользователя по ID", id);
+        return userService.getUserById(id);
     }
 
-    @GetMapping("users")
-    public ResponseEntity<List<User>> getUsers() {
-        return ResponseEntity.status(HttpStatus.OK).body(userStorage.getAllUsers());
+    @PostMapping
+    public User createUser(@Valid @RequestBody User user) { // ДОБАВЬТЕ @Valid
+        log.info("POST /users - создание нового пользователя");
+        return userService.createUser(user);
     }
 
-    @GetMapping("/users/clear")
-    public ResponseEntity<List<User>> clearUsers() {
-        return ResponseEntity.status(HttpStatus.OK).body(userStorage.clearUsers());
+    @PutMapping
+    public User updateUser(@Valid @RequestBody User user) { // ДОБАВЬТЕ @Valid
+        log.info("PUT /users - обновление пользователя");
+        return userService.updateUser(user);
     }
 
-    @GetMapping("/users/{id}")
-    public ResponseEntity<User> getUser(@Valid @PathVariable int id) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(userStorage.getUser(id));
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(
+            @PathVariable Long id,
+            @PathVariable Long friendId) {
+        log.info("PUT /users/{}/friends/{} - добавление в друзья", id, friendId);
+        userService.addFriend(id, friendId);
     }
 
-    @GetMapping("/users/{id}/friends")
-    public ResponseEntity<List<User>> getUserFriends(@Valid @PathVariable int id) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getUsersByListIDs(userStorage.getUser(id).getFriends().stream().toList()));
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFriend(
+            @PathVariable Long id,
+            @PathVariable Long friendId) {
+        log.info("DELETE /users/{}/friends/{} - удаление из друзей", id, friendId);
+        userService.removeFriend(id, friendId);
     }
 
-    @PutMapping("/users/{id}/friends/{friendId}")
-    public ResponseEntity<Map<String, String>> addToFriends(@Valid @PathVariable int id, @Valid @PathVariable int friendId) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.addToFriends(id, friendId));
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable Long id) {
+        log.info("GET /users/{}/friends - получение списка друзей", id);
+        return userService.getFriends(id);
     }
 
-    @DeleteMapping("/users/{id}/friends/{friendId}")
-    public ResponseEntity<Map<String, String>> deleteFromFriends(@Valid @PathVariable int id, @Valid @PathVariable int friendId) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.deleteFromFriends(id, friendId));
-    }
-
-    @GetMapping("/users/{id}/friends/common/{otherId}")
-    public ResponseEntity<List<User>> getUserCommonFriends(@Valid @PathVariable int id, @Valid @PathVariable int otherId) throws CustomValidationExpression {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getUsersByListIDs(userService.getCommonFriendsList(id, otherId).stream().toList()));
-    }
-
-    //ЭТО реализовано, чтоб просто пройти ПР по тестам, которые противоречат логике, здравому смыслу и стандартам
-    //... Прошу понять и простить
-    @PutMapping("/users")
-    public ResponseEntity<User> updateUser(@Valid @RequestBody User user) {
-        int id = user.getId();
-        if (userStorage.getUsers().containsKey(id)) {
-            userStorage.updateUser(id, user);
-            log.info("Изменен пользователь {}", userStorage.getUsers().get(user.getId()));
-            return ResponseEntity.status(HttpStatus.OK).body(userStorage.getUsers().get(user.getId()));
-        } else {
-            throw new IdNotFoundException("Пользователь не найден");
-        }
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(
+            @PathVariable Long id,
+            @PathVariable Long otherId) {
+        log.info("GET /users/{}/friends/common/{} - получение общих друзей", id, otherId);
+        return userService.getCommonFriends(id, otherId);
     }
 }
