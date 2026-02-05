@@ -1,47 +1,38 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-@Getter
-@EqualsAndHashCode
-@ToString
-@Setter
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
+    private Long id;
 
-    private Set<Integer> friends;
-
-    private String name;
-    @NonNull
-    @Past(message = "День рождения не может быть в будущем")
-    private LocalDate birthday;
-    @NonNull
-    @NotEmpty(message = "Логин не может быть null или пустым")
-    @Pattern(regexp = "^\\S+$", message = "Логин не может содержать пробелы")
-    private String login;
-    @NonNull
-    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
-            message = "Email должен быть в формате name@example.com")
+    @NotBlank(message = "Электронная почта не может быть пустой")
+    @Email(message = "Электронная почта должна содержать символ @")
     private String email;
 
-    private int id;
+    @NotBlank(message = "Логин не может быть пустым")
+    @Pattern(regexp = "\\S+", message = "Логин не может содержать пробелы")
+    private String login;
 
-    @Builder(toBuilder = true)
-    public User(String name, @NonNull LocalDate birthday, @NonNull String login, @NonNull String email) {
-        this.friends = new HashSet<>();
-        if (name == null) {
-            this.name = login;
-        } else {
-            this.name = name;
-        }
-        this.birthday = birthday;
-        this.login = login;
-        this.email = email;
-    }
+    private String name;
+
+    @PastOrPresent(message = "Дата рождения не может быть в будущем")
+    private LocalDate birthday;
+
+    @Builder.Default
+    private Set<Long> friends = new HashSet<>();
 }
