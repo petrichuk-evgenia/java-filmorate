@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -131,9 +130,6 @@ public class UserService {
 
     public List<User> getCommonFriends(Long userId, Long otherId) {
         log.debug("Запрос на получение общих друзей пользователей {} и {}", userId, otherId);
-
-        validateBothUsersExist(userId, otherId);
-
         List<User> commonFriends = userStorage.getCommonFriends(userId, otherId);
         return enrichUsersWithFriends(commonFriends);
     }
@@ -178,19 +174,9 @@ public class UserService {
             throw new CustomValidationExpression("Логин не может быть пустым");
         }
 
-        if (user.getLogin().contains(" ")) {
-            log.warn("Попытка создать пользователя с логином, содержащим пробелы: {}", user.getLogin());
-            throw new CustomValidationExpression("Логин не может содержать пробелы");
-        }
-
         if (user.getBirthday() == null) {
             log.warn("Попытка создать пользователя без даты рождения");
             throw new CustomValidationExpression("Дата рождения должна быть указана");
-        }
-
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Попытка создать пользователя с датой рождения в будущем: {}", user.getBirthday());
-            throw new CustomValidationExpression("Дата рождения не может быть в будущем");
         }
     }
 

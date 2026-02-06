@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
-    private static final Long DEFAULT_MPA_ID = 1L;
 
     private final FilmStorage filmStorage;
     private final FilmDataLoader filmDataLoader;
@@ -178,21 +177,14 @@ public class FilmService {
 
         film.setLikes(filmDataLoader.loadLikesForFilm(film.getId()));
 
-        if (film.getMpa() != null && film.getMpa().getId() != null) {
-            film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
-        }
+        film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
 
         return film;
     }
 
     private void validateAndEnrichFilmData(Film film) {
-        if (film.getMpa() == null || film.getMpa().getId() == null) {
-            Mpa defaultMpa = mpaService.getMpaById(DEFAULT_MPA_ID);
-            film.setMpa(defaultMpa);
-        } else {
-            Mpa mpa = mpaService.getMpaById(film.getMpa().getId());
-            film.setMpa(mpa);
-        }
+        Mpa mpa = mpaService.getMpaById(film.getMpa().getId());
+        film.setMpa(mpa);
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             Set<Long> genreIds = film.getGenres().stream()

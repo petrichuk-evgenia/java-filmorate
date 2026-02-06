@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -14,43 +14,34 @@ import java.util.Map;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class GenreService {
 
+    @Autowired
     private final GenreDao genreDao;
-
     private List<Genre> allGenresCache;
     private Map<Long, Genre> genresByIdCache;
 
+    public GenreService(GenreDao genreDao) {
+        this.genreDao = genreDao;
+        allGenresCache = genreDao.getAllGenres();
+        genresByIdCache = new HashMap<>();
+    }
+
     public List<Genre> getAllGenres() {
-        if (allGenresCache == null) {
-            allGenresCache = genreDao.getAllGenres();
-            genresByIdCache = new HashMap<>();
-            for (Genre genre : allGenresCache) {
-                genresByIdCache.put(genre.getId(), genre);
-            }
+        for (Genre genre : allGenresCache) {
+            genresByIdCache.put(genre.getId(), genre);
         }
         return allGenresCache;
     }
 
     public Genre getGenreById(Long id) {
-        if (genresByIdCache != null) {
-            Genre genre = genresByIdCache.get(id);
-            if (genre != null) {
-                return genre;
-            }
-        }
-
         Genre genre = genreDao.getGenreById(id)
                 .orElseThrow(() -> {
                     log.error("Жанр с ID {} не найден", id);
                     return new IdNotFoundException("Жанр с ID " + id + " не найден");
                 });
 
-        if (genresByIdCache != null) {
-            genresByIdCache.put(genre.getId(), genre);
-        }
-
+        genresByIdCache.put(genre.getId(), genre);
         return genre;
     }
 

@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -73,7 +72,7 @@ public class FilmDbStorageImpl implements FilmStorage {
         }
 
         log.info("Фильм создан с ID: {}", filmId);
-        return getFilmById(filmId).orElseThrow();
+        return film;
     }
 
     @Override
@@ -96,7 +95,7 @@ public class FilmDbStorageImpl implements FilmStorage {
         updateFilmGenres(film.getId(), film.getGenres());
 
         log.info("Фильм с ID {} обновлен", film.getId());
-        return getFilmById(film.getId()).orElseThrow();
+        return film;
     }
 
     @Override
@@ -117,11 +116,8 @@ public class FilmDbStorageImpl implements FilmStorage {
     public void addLike(Long filmId, Long userId) {
         String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
 
-        try {
-            jdbcTemplate.update(sql, filmId, userId);
+        if (jdbcTemplate.update(sql, filmId, userId) > 0) {
             log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
-        } catch (DataAccessException e) {
-            throw new IdNotFoundException("Фильм или пользователь не найден");
         }
     }
 
@@ -129,11 +125,9 @@ public class FilmDbStorageImpl implements FilmStorage {
     public void removeLike(Long filmId, Long userId) {
         String sql = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
 
-        int deleted = jdbcTemplate.update(sql, filmId, userId);
-        if (deleted == 0) {
-            throw new IdNotFoundException("Лайк не найден");
+        if (jdbcTemplate.update(sql, filmId, userId) > 0) {
+            log.info("Пользователь {} удалил лайк фильму {}", userId, filmId);
         }
-        log.info("Пользователь {} удалил лайк фильму {}", userId, filmId);
     }
 
     @Override
