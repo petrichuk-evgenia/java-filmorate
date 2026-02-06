@@ -29,6 +29,7 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть положительным числом")
     private int duration;
 
+    @NotNull(message = "Mpa фильма должно быть указано")
     private Mpa mpa;
 
     @Builder.Default
