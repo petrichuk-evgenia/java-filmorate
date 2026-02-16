@@ -110,7 +110,8 @@ public class FilmDbStorageImpl implements FilmStorage {
 
         Long filmId = Objects.requireNonNull(keyHolder.getKey()).longValue();
         film.setId(filmId);
-
+        updateFilmGenres(film.getId(), film.getGenres());
+        updateFilmDirectors(film.getId(), film.getDirectors());
         log.info("Фильм создан с ID: {}", filmId);
         return enrichFilm(film);
     }
@@ -321,7 +322,7 @@ public class FilmDbStorageImpl implements FilmStorage {
                 "ORDER BY g.genre_id";
         try {
             return jdbcTemplate.query(sql, (rs, rowNum) -> Genre.builder()
-                    .id(rs.getLong("id"))
+                    .id(rs.getLong("genre_id"))
                     .name(rs.getString("name"))
                     .build(), filmId);
         } catch (EmptyResultDataAccessException e) {
@@ -337,7 +338,7 @@ public class FilmDbStorageImpl implements FilmStorage {
                 "ORDER BY d.director_id";
         try {
             return jdbcTemplate.query(sql, (rs, rowNum) -> Director.builder()
-                    .id(rs.getLong("id"))
+                    .id(rs.getLong("director_id"))
                     .name(rs.getString("name"))
                     .build(), filmId);
         } catch (EmptyResultDataAccessException e) {
