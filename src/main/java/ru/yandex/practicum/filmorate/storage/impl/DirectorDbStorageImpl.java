@@ -54,7 +54,7 @@ public class DirectorDbStorageImpl implements DirectorStorage {
     @Override
     public Director createDirector(Director director) {
         if (director == null || director.getName() == null || director.getName().isBlank()) {
-            throw new IllegalArgumentException("Некорректные данные режиссёра");
+            throw new IdNotFoundException("Некорректные данные режиссёра");
         }
 
         jdbcTemplate.update(INSERT_QUERY, director.getName());
