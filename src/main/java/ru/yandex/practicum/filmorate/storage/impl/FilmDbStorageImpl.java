@@ -27,7 +27,7 @@ import java.util.*;
 @Repository
 public class FilmDbStorageImpl implements FilmStorage {
     private static final Long DEFAULT_MPA_ID = 1L;
-    private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
+    private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private final JdbcTemplate jdbcTemplate;
 
