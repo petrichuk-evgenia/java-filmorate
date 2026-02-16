@@ -131,6 +131,9 @@ public class FilmDbStorageImpl implements FilmStorage {
 
         try {
             Film film = jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
+            if (film != null) {
+                enrichFilm(film);
+            }
             return Optional.ofNullable(film);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
