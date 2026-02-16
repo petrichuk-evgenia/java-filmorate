@@ -52,23 +52,23 @@ public class FilmDbStorageImpl implements FilmStorage {
                     "ORDER BY COALESCE(l.likes_count, 0) DESC";
 
     private static final String FIND_FILM_BASE_QUERY = """
-            SELECT DISTINCT 
-                f.film_id,
-                f.name,
-                f.description,
-                f.release_date,
-                f.duration,
-                f.mpa_id,
-                m.name AS mpa_name,
-                COALESCE(l.likes_count, 0) AS likes_count
-            FROM films f
-            LEFT JOIN mpa_ratings m ON f.mpa_id = m.mpa_id
-            LEFT JOIN (
-                SELECT film_id, COUNT(*) AS likes_count
-                FROM likes
-                GROUP BY film_id
-            ) l ON f.film_id = l.film_id
-            """;
+        SELECT DISTINCT 
+            f.film_id,
+            f.name,
+            f.description,
+            f.release_date,
+            f.duration,
+            f.mpa_id,
+            m.name AS mpa_name,
+            COALESCE(l.likes_count, 0) AS likes_count
+        FROM films f
+        LEFT JOIN mpa_ratings m ON f.mpa_id = m.mpa_id
+        LEFT JOIN (
+            SELECT film_id, COUNT(*) AS likes_count
+            FROM likes
+            GROUP BY film_id
+        ) l ON f.film_id = l.film_id
+        """;
 
     private static final String FIND_FILM_BY_NAME = """
             WHERE LOWER(f.name) LIKE ?
