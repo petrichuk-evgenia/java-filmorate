@@ -125,6 +125,10 @@ public class FilmService {
         return enrichFilmsWithAdditionalData(popularFilms);
     }
 
+    public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
+
     private List<Film> enrichFilmsWithAdditionalData(List<Film> films) {
         if (films.isEmpty()) {
             return films;

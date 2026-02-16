@@ -37,4 +37,7 @@ public class Film {
 
     @Builder.Default
     private Set<Long> likes = new HashSet<>();
+
+    @Builder.Default
+    private Set<Director> directors = new HashSet<>();
 }
