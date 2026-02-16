@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component("filmDbStorage")
@@ -201,5 +202,115 @@ public class FilmDbStorageImpl implements FilmStorage {
                 .duration(rs.getInt("duration"))
                 .mpa(mpa)
                 .build();
+    }
+
+    @Override
+    public Set<Long> getFilmLikes(Long filmId) {
+        String sql = "SELECT user_id FROM likes WHERE film_id = ?";
+        return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, filmId));
+    }
+
+    @Override
+    public Set<Long> getUserLikes(Long userId) {
+        String sql = "SELECT film_id FROM likes WHERE user_id = ?";
+        return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, userId));
+    }
+
+    @Override
+    public List<Film> getRecommendations(Long userId) {
+        log.debug("Получение рекомендаций для пользователя с ID: {}", userId);
+
+        Set<Long> userLikes = getUserLikes(userId);
+
+        if (userLikes.isEmpty()) {
+            log.debug("У пользователя {} нет лайков, возвращаем пустой список рекомендаций", userId);
+            return Collections.emptyList(); // ВАЖНО: возвращаем пустой список, а не null
+        }
+
+        String similarUsersSql = String.format(
+                "SELECT DISTINCT user_id FROM likes WHERE film_id IN (%s) AND user_id != ?",
+                userLikes.stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(","))
+        );
+
+        List<Long> similarUserIds = jdbcTemplate.queryForList(similarUsersSql, Long.class, userId);
+
+        if (similarUserIds.isEmpty()) {
+            log.debug("Не найдено пользователей с похожими вкусами для пользователя {}", userId);
+            return Collections.emptyList();
+        }
+
+        Map<Long, Integer> commonLikesCount = new HashMap<>();
+
+        String placeholders = similarUserIds.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(","));
+
+        String commonLikesSql = String.format(
+                "SELECT l2.user_id, COUNT(*) as common_count " +
+                        "FROM likes l1 " +
+                        "JOIN likes l2 ON l1.film_id = l2.film_id " +
+                        "WHERE l1.user_id = ? AND l2.user_id IN (%s) AND l2.user_id != ? " +
+                        "GROUP BY l2.user_id",
+                placeholders
+        );
+
+        List<Object> params = new ArrayList<>();
+        params.add(userId);
+        params.addAll(similarUserIds);
+        params.add(userId);
+
+        try {
+            commonLikesCount = jdbcTemplate.query(commonLikesSql, rs -> {
+                Map<Long, Integer> map = new HashMap<>();
+                while (rs.next()) {
+                    map.put(rs.getLong("user_id"), rs.getInt("common_count"));
+                }
+                return map;
+            }, params.toArray());
+        } catch (Exception e) {
+            log.error("Ошибка при вычислении общих лайков: {}", e.getMessage());
+            return Collections.emptyList();
+        }
+
+        Long mostSimilarUserId = commonLikesCount.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+
+        if (mostSimilarUserId == null) {
+            log.debug("Не удалось определить наиболее похожего пользователя");
+            return Collections.emptyList();
+        }
+
+        Set<Long> similarUserLikes = getUserLikes(mostSimilarUserId);
+
+        Set<Long> recommendedFilmIds = similarUserLikes.stream()
+                .filter(filmId -> !userLikes.contains(filmId))
+                .collect(Collectors.toSet());
+
+        if (recommendedFilmIds.isEmpty()) {
+            log.debug("У похожего пользователя {} нет новых фильмов для рекомендации", mostSimilarUserId);
+            return Collections.emptyList();
+        }
+
+        String filmsSql = String.format(
+                "SELECT f.*, m.name as mpa_name FROM films f " +
+                        "LEFT JOIN mpa_ratings m ON f.mpa_id = m.mpa_id " +
+                        "WHERE f.film_id IN (%s)",
+                recommendedFilmIds.stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(","))
+        );
+
+        try {
+            List<Film> recommendations = jdbcTemplate.query(filmsSql, this::mapRowToFilm);
+            log.info("Для пользователя {} найдено {} рекомендаций", userId, recommendations.size());
+            return recommendations;
+        } catch (Exception e) {
+            log.error("Ошибка при загрузке рекомендованных фильмов: {}", e.getMessage());
+            return Collections.emptyList();
+        }
     }
 }
