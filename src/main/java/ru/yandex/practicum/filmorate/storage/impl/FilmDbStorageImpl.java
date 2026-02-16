@@ -120,7 +120,7 @@ public class FilmDbStorageImpl implements FilmStorage {
         updateFilmGenres(film.getId(), film.getGenres());
         updateFilmDirectors(film.getId(), film.getDirectors());
         log.info("Фильм с ID {} обновлен", film.getId());
-        return film;
+        return enrichFilm(film);
     }
 
     @Override
