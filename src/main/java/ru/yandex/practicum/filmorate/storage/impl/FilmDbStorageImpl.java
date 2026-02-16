@@ -70,7 +70,7 @@ public class FilmDbStorageImpl implements FilmStorage {
                     "ORDER BY likes_count DESC";
 
     private static final String FIND_FILM_BY_DIRECTOR_AND_NAME =
-            "LEFT JION film_director fd ON f.film_id = fd.film_id " +
+            "LEFT JOIN film_director fd ON f.film_id = fd.film_id " +
                     "LEFT JOIN director d ON fd.director_id = d.director_id " +
                     "WHERE LOWER(f.name) LIKE ? OR LOWER(d.name) LIKE ? " +
                     "ORDER BY likes_count DESC";
