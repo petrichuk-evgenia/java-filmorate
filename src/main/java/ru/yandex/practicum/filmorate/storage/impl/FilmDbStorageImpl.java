@@ -97,7 +97,7 @@ public class FilmDbStorageImpl implements FilmStorage {
         }
 
         log.info("Фильм создан с ID: {}", filmId);
-        return film;
+        return enrichFilm(film);
     }
 
     @Override
