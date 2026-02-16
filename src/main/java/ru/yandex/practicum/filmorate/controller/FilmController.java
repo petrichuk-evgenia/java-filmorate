@@ -73,4 +73,9 @@ public class FilmController {
         log.info("GET /films/director/{}?sortBy={} - получение фильмов по режиссёру", directorId, sortBy);
         return filmService.getFilmsByDirector(directorId, sortBy);
     }
+
+    @GetMapping("/search")
+    public List<Film> searchFilms(@RequestParam String query, @RequestParam String by) {
+        return filmService.searchFilms(query, by);
+    }
 }
