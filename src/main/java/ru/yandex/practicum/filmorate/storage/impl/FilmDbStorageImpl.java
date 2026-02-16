@@ -183,7 +183,21 @@ public class FilmDbStorageImpl implements FilmStorage {
             saveFilmGenres(filmId, genres);
         }
     }
-
+    public List<Genre> getGenresForFilm(Long filmId) {
+        String sql = "SELECT g.genre_id AS id, g.name " +
+                "FROM genres g " +
+                "INNER JOIN film_genres fg ON g.genre_id = fg.genre_id " +
+                "WHERE fg.film_id = ? " +
+                "ORDER BY g.genre_id";
+        try {
+            return jdbcTemplate.query(sql, (rs, rowNum) -> Genre.builder()
+                    .id(rs.getLong("id"))
+                    .name(rs.getString("name"))
+                    .build(), filmId);
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
+        }
+    }
     Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Mpa mpa = null;
         Long mpaId = rs.getLong("mpa_id");

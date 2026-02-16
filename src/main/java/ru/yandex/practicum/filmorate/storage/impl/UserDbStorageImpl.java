@@ -10,6 +10,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -17,9 +18,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component("userDbStorage")
@@ -154,7 +154,15 @@ public class UserDbStorageImpl implements UserStorage {
             throw new IdNotFoundException("Пользователь не найден");
         }
 
-        return jdbcTemplate.query(GET_COMMON_FILMS_QUERY, filmDbStorage::mapRowToFilm, userId, otherId);
+        List<Film> films = jdbcTemplate.query(GET_COMMON_FILMS_QUERY, filmDbStorage::mapRowToFilm, userId, otherId);
+
+        return films.stream()
+                .map(film -> {
+                    List<Genre> genres = filmDbStorage.getGenresForFilm(film.getId());
+                    film.setGenres(new HashSet<>(genres));
+                    return film;
+                })
+                .collect(Collectors.toList());
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
