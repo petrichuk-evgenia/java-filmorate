@@ -51,36 +51,20 @@ public class FilmDbStorageImpl implements FilmStorage {
                     "WHERE fd.director_id = ? " +
                     "ORDER BY COALESCE(l.likes_count, 0) DESC";
 
-    private static final String FIND_FILM_BASE_QUERY = """
-        SELECT DISTINCT 
-            f.film_id,
-            f.name,
-            f.description,
-            f.release_date,
-            f.duration,
-            f.mpa_id,
-            m.name AS mpa_name,
-            COALESCE(l.likes_count, 0) AS likes_count
-        FROM films f
-        LEFT JOIN mpa_ratings m ON f.mpa_id = m.mpa_id
-        LEFT JOIN (
-            SELECT film_id, COUNT(*) AS likes_count
-            FROM likes
-            GROUP BY film_id
-        ) l ON f.film_id = l.film_id
-        """;
+    private static final String FIND_FILM_BASE_QUERY =
+            "SELECT DISTINCT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name, " +
+                    "COALESCE(l.likes_count, 0) AS likes_count " +
+                    "FROM films f " +
+                    "LEFT JOIN mpa_ratings m ON f.mpa_id = m.mpa_id " +
+                    "LEFT JOIN (" +
+                    "SELECT film_id, COUNT(*) AS likes_count " +
+                    "FROM likes " +
+                    "GROUP BY film_id " +
+                    ") l ON f.film_id = l.film_id ";
 
-    private static final String FIND_FILM_BY_NAME = """
-            WHERE LOWER(f.name) LIKE ?
-            ORDER BY likes_count DESC
-            """;
+    private static final String FIND_FILM_BY_NAME = "WHERE LOWER(f.name) LIKE ? ORDER BY likes_count DESC";
 
-    private static final String FIND_FILM_BY_DIRECTOR = """
-            INNER JOIN film_director fd ON f.film_id = fd.film_id
-            INNER JOIN director d ON fd.director_id = d.director_id
-            WHERE LOWER(d.name) LIKE ?
-            ORDER BY likes_count DESC
-            """;
+    private static final String FIND_FILM_BY_DIRECTOR = "INNER JOIN film_director fd ON f.film_id = fd.film_id INNER JOIN director d ON fd.director_id = d.director_id WHERE LOWER(d.name) LIKE ? ORDER BY likes_count DESC";
 
     private static final String FIND_FILM_BY_DIRECTOR_AND_NAME = """
             INNER JOIN film_director fd ON f.film_id = fd.film_id
