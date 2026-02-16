@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ import java.util.List;
 public class FilmController {
 
     private final FilmService filmService;
+    private final UserService userService;
 
     @GetMapping
     public List<Film> getAllFilms() {
@@ -63,6 +65,13 @@ public class FilmController {
     public List<Film> getPopularFilms(
             @RequestParam(defaultValue = "10") Integer count) {
         log.info("GET /films/popular?count={} - получение популярных фильмов", count);
+        log.info("GET /films/common?userId={userId}&friendId={friendId} - получение списка фильмов, отсортированных по популярности");
         return filmService.getPopularFilms(count);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@PathVariable Long userId, @PathVariable Long friendId) {
+        log.info("GET /films/common?userId={}&friendId={} - получение списка фильмов, отсортированных по популярности", userId, friendId);
+        return userService.getCommonFilms(userId, friendId);
     }
 }

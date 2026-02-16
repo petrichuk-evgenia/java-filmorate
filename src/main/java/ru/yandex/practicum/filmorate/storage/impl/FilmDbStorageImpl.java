@@ -184,7 +184,7 @@ public class FilmDbStorageImpl implements FilmStorage {
         }
     }
 
-    private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
+    Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Mpa mpa = null;
         Long mpaId = rs.getLong("mpa_id");
         String mpaName = rs.getString("mpa_name");

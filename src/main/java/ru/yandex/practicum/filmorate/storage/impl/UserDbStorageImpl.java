@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -25,10 +26,14 @@ import java.util.Optional;
 @Primary
 public class UserDbStorageImpl implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final FilmDbStorageImpl filmDbStorage;
+    private static final String GET_COMMON_FILMS_QUERY = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_rating_id, m.name AS mpa_name, (SELECT COUNT(*) FROM film_likes fl WHERE fl.film_id = f.film_id) AS likes_count FROM films f LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.id WHERE f.film_id IN (SELECT l1.film_id FROM film_likes l1 WHERE l1.user_id = ?) AND f.film_id IN (SELECT l2.film_id FROM film_likes l2 WHERE l2.user_id = ?) ORDER BY likes_count DESC";
 
-    public UserDbStorageImpl(JdbcTemplate jdbcTemplate) {
+    public UserDbStorageImpl(JdbcTemplate jdbcTemplate, FilmDbStorageImpl filmDbStorage) {
         this.jdbcTemplate = jdbcTemplate;
+        this.filmDbStorage = filmDbStorage;
     }
+
 
     @Override
     public List<User> getAllUsers() {
@@ -142,6 +147,15 @@ public class UserDbStorageImpl implements UserStorage {
 
     @Override
     public void deleteUser(Long id) {
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long otherId) {
+        if (!existsById(userId) || !existsById(otherId)) {
+            throw new IdNotFoundException("Пользователь не найден");
+        }
+
+        return jdbcTemplate.query(GET_COMMON_FILMS_QUERY, filmDbStorage::mapRowToFilm, userId, otherId);
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
