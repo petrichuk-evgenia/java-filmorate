@@ -148,7 +148,8 @@ public class UserDbStorageImpl implements UserStorage {
         if (!user.isPresent()) {
             throw new IdNotFoundException("Пользователь с ID " + id + " не найден");
         }
-        return jdbcTemplate.queryForObject(DELETE_QUERY, this::mapRowToUser, id);
+        jdbcTemplate.update(DELETE_QUERY, id);
+        return user.get();
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
