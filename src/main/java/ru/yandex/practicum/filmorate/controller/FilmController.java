@@ -65,13 +65,14 @@ public class FilmController {
     public List<Film> getPopularFilms(
             @RequestParam(defaultValue = "10") Integer count) {
         log.info("GET /films/popular?count={} - получение популярных фильмов", count);
-        log.info("GET /films/common?userId={userId}&friendId={friendId} - получение списка фильмов, отсортированных по популярности");
         return filmService.getPopularFilms(count);
     }
 
     @GetMapping("/common")
-    public List<Film> getCommonFilms(@PathVariable Long userId, @PathVariable Long friendId) {
-        log.info("GET /films/common?userId={}&friendId={} - получение списка фильмов, отсортированных по популярности", userId, friendId);
+    public List<Film> getCommonFilms(
+            @RequestParam Long userId,
+            @RequestParam Long friendId) {
+        log.info("GET /films/common?userId={}&friendId={} - получение общих фильмов", userId, friendId);
         return userService.getCommonFilms(userId, friendId);
     }
 }
