@@ -111,13 +111,6 @@ public class FilmDbStorageImpl implements FilmStorage {
         Long filmId = Objects.requireNonNull(keyHolder.getKey()).longValue();
         film.setId(filmId);
 
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            saveFilmGenres(filmId, film.getGenres());
-        }
-        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-            saveFilmDirectors(filmId, film.getDirectors());
-        }
-
         log.info("Фильм создан с ID: {}", filmId);
         return enrichFilm(film);
     }
@@ -260,8 +253,11 @@ public class FilmDbStorageImpl implements FilmStorage {
         } else {
             throw new IdNotFoundException("Некорректный параметр поиска: " + by);
         }
+        return jdbcTemplate.query(sql, this::mapRowToFilm, params.toArray())
+                .stream()
+                .map(this::enrichFilm)
+                .collect(Collectors.toList());
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm, params.toArray());
     }
 
     private void updateFilmGenres(Long filmId, Set<Genre> genres) {
@@ -307,8 +303,30 @@ public class FilmDbStorageImpl implements FilmStorage {
     }
 
     private Film enrichFilm(Film film) {
-        film.setDirectors(new HashSet<>(getDirectorsForFilm(film.getId())));
+        if (film.getId() != null) {
+            List<Genre> genres = getGenresForFilm(film.getId());
+            film.setGenres(new HashSet<>(genres));
+
+            List<Director> directors = getDirectorsForFilm(film.getId());
+            film.setDirectors(new HashSet<>(directors));
+        }
         return film;
+    }
+
+    public List<Genre> getGenresForFilm(Long filmId) {
+        String sql = "SELECT g.genre_id AS id, g.name " +
+                "FROM genres g " +
+                "INNER JOIN film_genres fg ON g.genre_id = fg.genre_id " +
+                "WHERE fg.film_id = ? " +
+                "ORDER BY g.genre_id";
+        try {
+            return jdbcTemplate.query(sql, (rs, rowNum) -> Genre.builder()
+                    .id(rs.getLong("id"))
+                    .name(rs.getString("name"))
+                    .build(), filmId);
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
+        }
     }
 
     public List<Director> getDirectorsForFilm(Long filmId) {
