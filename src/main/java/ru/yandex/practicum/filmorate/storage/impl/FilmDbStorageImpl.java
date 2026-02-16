@@ -27,6 +27,7 @@ import java.util.*;
 @Repository
 public class FilmDbStorageImpl implements FilmStorage {
     private static final Long DEFAULT_MPA_ID = 1L;
+    private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -152,7 +153,13 @@ public class FilmDbStorageImpl implements FilmStorage {
     }
 
     @Override
-    public void deleteFilm(Long id) {
+    public Film deleteFilm(Long id) {
+        Optional<Film> film = getFilmById(id);
+        if (!film.isPresent()) {
+            throw new IdNotFoundException("Фильм с ID " + id + " не найден");
+        }
+        jdbcTemplate.update(DELETE_QUERY, id);
+        return film.get();
     }
 
     private void saveFilmGenres(Long filmId, Set<Genre> genres) {

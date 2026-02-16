@@ -71,4 +71,10 @@ public class UserController {
         log.info("GET /users/{}/friends/common/{} - получение общих друзей", id, otherId);
         return userService.getCommonFriends(id, otherId);
     }
+
+    @DeleteMapping("/{id}")
+    public User deleteUser(@PathVariable Long id) {
+        log.info("DELETE /users/{} - удаление пользователя", id);
+        return userService.deleteUser(id);
+    }
 }

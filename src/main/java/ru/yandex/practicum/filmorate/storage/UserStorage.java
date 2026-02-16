@@ -24,5 +24,5 @@ public interface UserStorage {
 
     boolean existsById(Long id);
 
-    void deleteUser(Long id);
+    User deleteUser(Long id);
 }

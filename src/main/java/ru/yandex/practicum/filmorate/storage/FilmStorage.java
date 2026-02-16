@@ -22,5 +22,5 @@ public interface FilmStorage {
 
     boolean existsById(Long id);
 
-    void deleteFilm(Long id);
+    Film deleteFilm(Long id);
 }
