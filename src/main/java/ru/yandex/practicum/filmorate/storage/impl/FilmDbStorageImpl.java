@@ -59,19 +59,21 @@ public class FilmDbStorageImpl implements FilmStorage {
                     "LEFT JOIN (" +
                     "SELECT film_id, COUNT(*) AS likes_count " +
                     "FROM likes " +
-                    "GROUP BY film_id " +
-                    ") l ON f.film_id = l.film_id ";
+                    "GROUP BY film_id) l ON f.film_id = l.film_id ";
 
     private static final String FIND_FILM_BY_NAME = "WHERE LOWER(f.name) LIKE ? ORDER BY likes_count DESC";
 
-    private static final String FIND_FILM_BY_DIRECTOR = "INNER JOIN film_director fd ON f.film_id = fd.film_id INNER JOIN director d ON fd.director_id = d.director_id WHERE LOWER(d.name) LIKE ? ORDER BY likes_count DESC";
+    private static final String FIND_FILM_BY_DIRECTOR =
+            "INNER JOIN film_director fd ON f.film_id = fd.film_id " +
+                    "INNER JOIN director d ON fd.director_id = d.director_id " +
+                    "WHERE LOWER(d.name) LIKE ? " +
+                    "ORDER BY likes_count DESC";
 
-    private static final String FIND_FILM_BY_DIRECTOR_AND_NAME = """
-            INNER JOIN film_director fd ON f.film_id = fd.film_id
-            INNER JOIN director d ON fd.director_id = d.director_id
-            WHERE LOWER(f.name) LIKE ? OR LOWER(d.name) LIKE ?
-            ORDER BY likes_count DESC
-            """;
+    private static final String FIND_FILM_BY_DIRECTOR_AND_NAME =
+            "INNER JOIN film_director fd ON f.film_id = fd.film_id " +
+                    "INNER JOIN director d ON fd.director_id = d.director_id " +
+                    "WHERE LOWER(f.name) LIKE ? OR LOWER(d.name) LIKE ? " +
+                    "ORDER BY likes_count DESC";
 
     public FilmDbStorageImpl(JdbcTemplate jdbcTemplate, DirectorDbStorageImpl directorDbStorage) {
         this.jdbcTemplate = jdbcTemplate;
