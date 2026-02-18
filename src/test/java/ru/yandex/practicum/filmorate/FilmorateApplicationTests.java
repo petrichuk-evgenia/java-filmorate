@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         FilmDbStorageImpl.class,
         GenreDao.class,
         MpaDao.class,
-        DirectorDbStorageImpl.class
+        DirectorDbStorageImpl.class,
         EventDbStorage.class
 })
 @Sql(scripts = {"/schema.sql", "/data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
