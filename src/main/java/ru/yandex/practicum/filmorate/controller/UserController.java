@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -20,6 +22,7 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
     private final FilmService filmService;
+    private final EventService eventService;
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -85,5 +88,11 @@ public class UserController {
     public User deleteUser(@PathVariable Long id) {
         log.info("DELETE /users/{} - удаление пользователя", id);
         return userService.deleteUser(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getUserFeed(@PathVariable Long id) {
+        log.info("GET /users/{}/feed - получение ленты событий пользователя", id);
+        return eventService.getUserFeed(id);
     }
 }
