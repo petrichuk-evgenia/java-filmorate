@@ -9,8 +9,6 @@ import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.Operation;
-import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.time.LocalDate;
@@ -27,21 +25,18 @@ public class FilmService {
     private final MpaService mpaService;
     private final GenreService genreService;
     private final UserService userService;
-    private final EventStorage eventStorage;
 
     public FilmService(
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
             FilmDataLoader filmDataLoader,
             MpaService mpaService,
             GenreService genreService,
-            UserService userService,
-            EventStorage eventStorage) {
+            UserService userService) {
         this.filmStorage = filmStorage;
         this.filmDataLoader = filmDataLoader;
         this.mpaService = mpaService;
         this.genreService = genreService;
         this.userService = userService;
-        this.eventStorage = eventStorage;
     }
 
     public List<Film> getAllFilms() {
@@ -105,9 +100,6 @@ public class FilmService {
         userService.getUserById(userId);
 
         filmStorage.addLike(filmId, userId);
-
-        eventStorage.addLikeEvent(userId, filmId, Operation.ADD);
-
         log.info("Лайк успешно добавлен");
     }
 
@@ -122,9 +114,6 @@ public class FilmService {
         userService.getUserById(userId);
 
         filmStorage.removeLike(filmId, userId);
-
-        eventStorage.addLikeEvent(userId, filmId, Operation.REMOVE);
-
         log.info("Лайк успешно удален");
     }
 

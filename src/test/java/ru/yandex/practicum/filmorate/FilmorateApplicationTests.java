@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.dao.GenreDao;
 import ru.yandex.practicum.filmorate.storage.dao.MpaDao;
 import ru.yandex.practicum.filmorate.storage.impl.DirectorDbStorageImpl;
-import ru.yandex.practicum.filmorate.storage.impl.EventDbStorage;
 import ru.yandex.practicum.filmorate.storage.impl.FilmDbStorageImpl;
 import ru.yandex.practicum.filmorate.storage.impl.UserDbStorageImpl;
 
@@ -29,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThat;
         GenreDao.class,
         MpaDao.class,
         DirectorDbStorageImpl.class
-        EventDbStorage.class
 })
 @Sql(scripts = {"/schema.sql", "/data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class FilmorateApplicationTests {

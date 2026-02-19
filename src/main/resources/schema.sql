@@ -1,6 +1,5 @@
 -- Удаление существующих таблиц
 DROP TABLE IF EXISTS film_director;
-DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS film_genres;
 DROP TABLE IF EXISTS likes;
 DROP TABLE IF EXISTS friendships;
@@ -9,6 +8,7 @@ DROP TABLE IF EXISTS director;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS genres;
 DROP TABLE IF EXISTS mpa_ratings;
+
 
 -- Создание таблицы рейтингов MPA
 CREATE TABLE IF NOT EXISTS mpa_ratings (
@@ -81,18 +81,3 @@ CREATE INDEX IF NOT EXISTS idx_likes_film_id ON likes(film_id);
 CREATE INDEX IF NOT EXISTS idx_likes_user_id ON likes(user_id);
 CREATE INDEX IF NOT EXISTS idx_friendships_user_id ON friendships(user_id);
 CREATE INDEX IF NOT EXISTS idx_friendships_friend_id ON friendships(friend_id);
-
--- Создание таблицы с событиями
-CREATE TABLE IF NOT EXISTS events (
-    event_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT NOT NULL,
-    timestamp TIMESTAMP NOT NULL,
-    event_type VARCHAR(20) NOT NULL,
-    operation VARCHAR(20) NOT NULL,
-    entity_id BIGINT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_events_user_id ON events(user_id);
-CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp);
-
