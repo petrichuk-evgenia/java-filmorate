@@ -173,6 +173,10 @@ public class FilmService {
         return films;
     }
 
+    public Film deleteFilm(Long filmId) {
+        return filmStorage.deleteFilm(filmId);
+    }
+
     private Film enrichFilmWithAdditionalData(Film film) {
         Set<Long> genreIds = filmDataLoader.loadGenresForFilm(film.getId());
         Map<Long, Genre> allGenresMap = genreService.getAllGenresMap();

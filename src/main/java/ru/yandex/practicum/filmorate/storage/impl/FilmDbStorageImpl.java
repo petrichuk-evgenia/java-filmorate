@@ -30,7 +30,22 @@ import java.util.stream.Collectors;
 @Repository
 public class FilmDbStorageImpl implements FilmStorage {
     private static final Long DEFAULT_MPA_ID = 1L;
-
+    private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
+    private static final String GET_FILMS_BY_DIRECTOR_SORT_BY_YEAR =
+            "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name " +
+                    "FROM films f " +
+                    "INNER JOIN mpa_ratings m ON f.mpa_id = m.mpa_id " +
+                    "INNER JOIN film_director fd ON f.film_id = fd.film_id " +
+                    "WHERE fd.director_id = ? " +
+                    "ORDER BY f.release_date";
+    private static final String GET_FILMS_BY_DIRECTOR_SORT_BY_LIKES =
+            "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name " +
+                    "FROM films f " +
+                    "INNER JOIN mpa_ratings m ON f.mpa_id = m.mpa_id " +
+                    "INNER JOIN film_director fd ON f.film_id = fd.film_id " +
+                    "LEFT JOIN (SELECT film_id, COUNT(*) AS likes_count FROM likes GROUP BY film_id) l ON f.film_id = l.film_id " +
+                    "WHERE fd.director_id = ? " +
+                    "ORDER BY COALESCE(l.likes_count, 0) DESC";
     private final JdbcTemplate jdbcTemplate;
     private final DirectorDbStorageImpl directorDbStorage;
 
@@ -114,6 +129,14 @@ public class FilmDbStorageImpl implements FilmStorage {
         film.setId(filmId);
         updateFilmGenres(film.getId(), film.getGenres());
         updateFilmDirectors(film.getId(), film.getDirectors());
+
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            saveFilmGenres(filmId, film.getGenres());
+        }
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            saveFilmDirectors(filmId, film.getDirectors());
+        }
+
         log.info("Фильм создан с ID: {}", filmId);
         return enrichFilm(film);
     }
@@ -198,7 +221,13 @@ public class FilmDbStorageImpl implements FilmStorage {
     }
 
     @Override
-    public void deleteFilm(Long id) {
+    public Film deleteFilm(Long id) {
+        Optional<Film> film = getFilmById(id);
+        if (!film.isPresent()) {
+            throw new IdNotFoundException("Фильм с ID " + id + " не найден");
+        }
+        jdbcTemplate.update(DELETE_QUERY, id);
+        return film.get();
     }
 
     private void saveFilmGenres(Long filmId, Set<Genre> genres) {
@@ -286,6 +315,22 @@ public class FilmDbStorageImpl implements FilmStorage {
         }
     }
 
+    public List<Genre> getGenresForFilm(Long filmId) {
+        String sql = "SELECT g.genre_id AS id, g.name " +
+                "FROM genres g " +
+                "INNER JOIN film_genres fg ON g.genre_id = fg.genre_id " +
+                "WHERE fg.film_id = ? " +
+                "ORDER BY g.genre_id";
+        try {
+            return jdbcTemplate.query(sql, (rs, rowNum) -> Genre.builder()
+                    .id(rs.getLong("id"))
+                    .name(rs.getString("name"))
+                    .build(), filmId);
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
+        }
+    }
+
     Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Mpa mpa = null;
         Long mpaId = rs.getLong("mpa_id");
@@ -332,6 +377,10 @@ public class FilmDbStorageImpl implements FilmStorage {
         }
     }
 
+        film.setDirectors(new HashSet<>(getDirectorsForFilm(film.getId())));
+        return film;
+    }
+
     public List<Director> getDirectorsForFilm(Long filmId) {
         String sql = "SELECT d.director_id AS id, d.name " +
                 "FROM director d " +
@@ -341,6 +390,7 @@ public class FilmDbStorageImpl implements FilmStorage {
         try {
             return jdbcTemplate.query(sql, (rs, rowNum) -> Director.builder()
                     .id(rs.getLong("director_id"))
+                    .id(rs.getLong("id"))
                     .name(rs.getString("name"))
                     .build(), filmId);
         } catch (EmptyResultDataAccessException e) {

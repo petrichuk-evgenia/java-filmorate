@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -24,5 +25,7 @@ public interface UserStorage {
 
     boolean existsById(Long id);
 
-    void deleteUser(Long id);
+    List<Film> getCommonFilms(Long userId, Long otherId);
+
+    User deleteUser(Long id);
 }
