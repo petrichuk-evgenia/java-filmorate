@@ -40,5 +40,7 @@ public interface FilmStorage {
 
     List<Film> getFilmsByDirector(Long directorId, String sortBy);
 
+    List<Film> searchFilms(String query, String by);
+
     Film deleteFilm(Long id);
 }

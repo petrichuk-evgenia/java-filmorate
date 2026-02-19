@@ -129,6 +129,10 @@ public class FilmService {
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 
+    public List<Film> searchFilms(String query, String by) {
+        return filmStorage.searchFilms(query, by);
+    }
+
     private List<Film> enrichFilmsWithAdditionalData(List<Film> films) {
         if (films.isEmpty()) {
             return films;

@@ -38,6 +38,7 @@ public class FilmDbStorageImpl implements FilmStorage {
                     "INNER JOIN film_director fd ON f.film_id = fd.film_id " +
                     "WHERE fd.director_id = ? " +
                     "ORDER BY f.release_date";
+
     private static final String GET_FILMS_BY_DIRECTOR_SORT_BY_LIKES =
             "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name " +
                     "FROM films f " +
@@ -46,6 +47,26 @@ public class FilmDbStorageImpl implements FilmStorage {
                     "LEFT JOIN (SELECT film_id, COUNT(*) AS likes_count FROM likes GROUP BY film_id) l ON f.film_id = l.film_id " +
                     "WHERE fd.director_id = ? " +
                     "ORDER BY COALESCE(l.likes_count, 0) DESC";
+    private static final String FIND_FILM_BASE_QUERY =
+            "SELECT DISTINCT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name, " +
+                    "COALESCE(l.likes_count, 0) AS likes_count " +
+                    "FROM films f " +
+                    "LEFT JOIN mpa_ratings m ON f.mpa_id = m.mpa_id " +
+                    "LEFT JOIN (" +
+                    "SELECT film_id, COUNT(*) AS likes_count " +
+                    "FROM likes " +
+                    "GROUP BY film_id) l ON f.film_id = l.film_id ";
+    private static final String FIND_FILM_BY_NAME = "WHERE LOWER(f.name) LIKE ? ORDER BY likes_count DESC";
+    private static final String FIND_FILM_BY_DIRECTOR =
+            "INNER JOIN film_director fd ON f.film_id = fd.film_id " +
+                    "INNER JOIN director d ON fd.director_id = d.director_id " +
+                    "WHERE LOWER(d.name) LIKE ? " +
+                    "ORDER BY likes_count DESC";
+    private static final String FIND_FILM_BY_DIRECTOR_AND_NAME =
+            "LEFT JOIN film_director fd ON f.film_id = fd.film_id " +
+                    "LEFT JOIN director d ON fd.director_id = d.director_id " +
+                    "WHERE LOWER(f.name) LIKE ? OR LOWER(d.name) LIKE ? " +
+                    "ORDER BY likes_count DESC";
     private final JdbcTemplate jdbcTemplate;
     private final DirectorDbStorageImpl directorDbStorage;
 
@@ -86,13 +107,8 @@ public class FilmDbStorageImpl implements FilmStorage {
 
         Long filmId = Objects.requireNonNull(keyHolder.getKey()).longValue();
         film.setId(filmId);
-
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            saveFilmGenres(filmId, film.getGenres());
-        }
-        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-            saveFilmDirectors(filmId, film.getDirectors());
-        }
+        updateFilmGenres(film.getId(), film.getGenres());
+        updateFilmDirectors(film.getId(), film.getDirectors());
 
         log.info("Фильм создан с ID: {}", filmId);
         return enrichFilm(film);
@@ -222,6 +238,31 @@ public class FilmDbStorageImpl implements FilmStorage {
         return films.stream()
                 .map(this::enrichFilm)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        List<Object> params = new ArrayList<>();
+        String sql = FIND_FILM_BASE_QUERY;
+
+        if ("title,director".equals(by) || "director,title".equals(by)) {
+            sql += FIND_FILM_BY_DIRECTOR_AND_NAME;
+            params.add("%" + query.toLowerCase() + "%");
+            params.add("%" + query.toLowerCase() + "%");
+        } else if ("title".equals(by)) {
+            sql += FIND_FILM_BY_NAME;
+            params.add("%" + query.toLowerCase() + "%");
+        } else if ("director".equals(by)) {
+            sql += FIND_FILM_BY_DIRECTOR;
+            params.add("%" + query.toLowerCase() + "%");
+        } else {
+            throw new IdNotFoundException("Некорректный параметр поиска: " + by);
+        }
+        return jdbcTemplate.query(sql, this::mapRowToFilm, params.toArray())
+                .stream()
+                .map(this::enrichFilm)
+                .collect(Collectors.toList());
+
     }
 
     private void updateFilmGenres(Long filmId, Set<Genre> genres) {
@@ -393,7 +434,13 @@ public class FilmDbStorageImpl implements FilmStorage {
     }
 
     private Film enrichFilm(Film film) {
-        film.setDirectors(new HashSet<>(getDirectorsForFilm(film.getId())));
+        if (film.getId() != null) {
+            List<Genre> genres = getGenresForFilm(film.getId());
+            film.setGenres(new HashSet<>(genres));
+
+            List<Director> directors = getDirectorsForFilm(film.getId());
+            film.setDirectors(new HashSet<>(directors));
+        }
         return film;
     }
 
@@ -405,6 +452,7 @@ public class FilmDbStorageImpl implements FilmStorage {
                 "ORDER BY d.director_id";
         try {
             return jdbcTemplate.query(sql, (rs, rowNum) -> Director.builder()
+                    .id(rs.getLong("director_id"))
                     .id(rs.getLong("id"))
                     .name(rs.getString("name"))
                     .build(), filmId);
