@@ -25,4 +25,5 @@ public interface FilmStorage {
     void deleteFilm(Long id);
 
     List<Film> getFilmsByDirector(Long directorId, String sortBy);
+    Film deleteFilm(Long id);
 }

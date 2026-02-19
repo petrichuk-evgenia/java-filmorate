@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 @Repository
 public class FilmDbStorageImpl implements FilmStorage {
     private static final Long DEFAULT_MPA_ID = 1L;
+    private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private final JdbcTemplate jdbcTemplate;
     private final DirectorDbStorageImpl directorDbStorage;
@@ -180,7 +181,13 @@ public class FilmDbStorageImpl implements FilmStorage {
     }
 
     @Override
-    public void deleteFilm(Long id) {
+    public Film deleteFilm(Long id) {
+        Optional<Film> film = getFilmById(id);
+        if (!film.isPresent()) {
+            throw new IdNotFoundException("Фильм с ID " + id + " не найден");
+        }
+        jdbcTemplate.update(DELETE_QUERY, id);
+        return film.get();
     }
 
     private void saveFilmGenres(Long filmId, Set<Genre> genres) {
@@ -240,6 +247,19 @@ public class FilmDbStorageImpl implements FilmStorage {
         jdbcTemplate.update("DELETE FROM film_director WHERE film_id = ?", filmId);
         if (directors != null && !directors.isEmpty()) {
             saveFilmDirectors(filmId, directors);
+    public List<Genre> getGenresForFilm(Long filmId) {
+        String sql = "SELECT g.genre_id AS id, g.name " +
+                "FROM genres g " +
+                "INNER JOIN film_genres fg ON g.genre_id = fg.genre_id " +
+                "WHERE fg.film_id = ? " +
+                "ORDER BY g.genre_id";
+        try {
+            return jdbcTemplate.query(sql, (rs, rowNum) -> Genre.builder()
+                    .id(rs.getLong("id"))
+                    .name(rs.getString("name"))
+                    .build(), filmId);
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
         }
     }
 

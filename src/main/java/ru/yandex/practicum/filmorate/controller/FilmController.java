@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ import java.util.List;
 public class FilmController {
 
     private final FilmService filmService;
+    private final UserService userService;
 
     @GetMapping
     public List<Film> getAllFilms() {
@@ -72,5 +74,17 @@ public class FilmController {
             @RequestParam(required = false, defaultValue = "year") String sortBy) {
         log.info("GET /films/director/{}?sortBy={} - получение фильмов по режиссёру", directorId, sortBy);
         return filmService.getFilmsByDirector(directorId, sortBy);
+      
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(
+            @RequestParam Long userId,
+            @RequestParam Long friendId) {
+        log.info("GET /films/common?userId={}&friendId={} - получение общих фильмов", userId, friendId);
+        return userService.getCommonFilms(userId, friendId);
+      
+    @DeleteMapping("/{id}")
+    public Film deleteFilm(@PathVariable Long id) {
+        log.info("DELETE /films/{} - удаление фильма", id);
+        return filmService.deleteFilm(id);
     }
 }
