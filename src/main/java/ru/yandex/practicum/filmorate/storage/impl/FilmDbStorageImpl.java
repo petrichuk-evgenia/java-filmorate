@@ -31,10 +31,6 @@ import java.util.stream.Collectors;
 public class FilmDbStorageImpl implements FilmStorage {
     private static final Long DEFAULT_MPA_ID = 1L;
     private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
-
-    private final JdbcTemplate jdbcTemplate;
-    private final DirectorDbStorageImpl directorDbStorage;
-
     private static final String GET_FILMS_BY_DIRECTOR_SORT_BY_YEAR =
             "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name " +
                     "FROM films f " +
@@ -42,7 +38,6 @@ public class FilmDbStorageImpl implements FilmStorage {
                     "INNER JOIN film_director fd ON f.film_id = fd.film_id " +
                     "WHERE fd.director_id = ? " +
                     "ORDER BY f.release_date";
-
     private static final String GET_FILMS_BY_DIRECTOR_SORT_BY_LIKES =
             "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name " +
                     "FROM films f " +
@@ -51,6 +46,8 @@ public class FilmDbStorageImpl implements FilmStorage {
                     "LEFT JOIN (SELECT film_id, COUNT(*) AS likes_count FROM likes GROUP BY film_id) l ON f.film_id = l.film_id " +
                     "WHERE fd.director_id = ? " +
                     "ORDER BY COALESCE(l.likes_count, 0) DESC";
+    private final JdbcTemplate jdbcTemplate;
+    private final DirectorDbStorageImpl directorDbStorage;
 
     public FilmDbStorageImpl(JdbcTemplate jdbcTemplate, DirectorDbStorageImpl directorDbStorage) {
         this.jdbcTemplate = jdbcTemplate;
@@ -247,6 +244,9 @@ public class FilmDbStorageImpl implements FilmStorage {
         jdbcTemplate.update("DELETE FROM film_director WHERE film_id = ?", filmId);
         if (directors != null && !directors.isEmpty()) {
             saveFilmDirectors(filmId, directors);
+        }
+    }
+
     public List<Genre> getGenresForFilm(Long filmId) {
         String sql = "SELECT g.genre_id AS id, g.name " +
                 "FROM genres g " +
