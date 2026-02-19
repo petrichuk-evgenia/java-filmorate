@@ -22,12 +22,9 @@ public interface FilmStorage {
 
     boolean existsById(Long id);
 
-    void deleteFilm(Long id);
-
     List<Film> getFilmsByDirector(Long directorId, String sortBy);
 
     List<Film> searchFilms(String query, String by);
-    List<Film> getFilmsByDirector(Long directorId, String sortBy);
 
     Film deleteFilm(Long id);
 }
