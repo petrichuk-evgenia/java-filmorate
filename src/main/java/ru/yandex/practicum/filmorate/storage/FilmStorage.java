@@ -22,5 +22,7 @@ public interface FilmStorage {
 
     boolean existsById(Long id);
 
+    List<Film> getFilmsByDirector(Long directorId, String sortBy);
+
     Film deleteFilm(Long id);
 }

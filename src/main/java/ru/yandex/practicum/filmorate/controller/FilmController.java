@@ -68,13 +68,22 @@ public class FilmController {
         return filmService.getPopularFilms(count);
     }
 
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(
+            @PathVariable Long directorId,
+            @RequestParam(required = false, defaultValue = "year") String sortBy) {
+        log.info("GET /films/director/{}?sortBy={} - получение фильмов по режиссёру", directorId, sortBy);
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
     @GetMapping("/common")
     public List<Film> getCommonFilms(
             @RequestParam Long userId,
             @RequestParam Long friendId) {
         log.info("GET /films/common?userId={}&friendId={} - получение общих фильмов", userId, friendId);
         return userService.getCommonFilms(userId, friendId);
-      
+    }
+
     @DeleteMapping("/{id}")
     public Film deleteFilm(@PathVariable Long id) {
         log.info("DELETE /films/{} - удаление фильма", id);
