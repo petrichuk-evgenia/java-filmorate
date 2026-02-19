@@ -110,13 +110,6 @@ public class FilmDbStorageImpl implements FilmStorage {
         updateFilmGenres(film.getId(), film.getGenres());
         updateFilmDirectors(film.getId(), film.getDirectors());
 
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            saveFilmGenres(filmId, film.getGenres());
-        }
-        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-            saveFilmDirectors(filmId, film.getDirectors());
-        }
-
         log.info("Фильм создан с ID: {}", filmId);
         return enrichFilm(film);
     }
