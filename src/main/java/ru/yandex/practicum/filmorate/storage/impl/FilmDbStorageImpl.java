@@ -38,6 +38,7 @@ public class FilmDbStorageImpl implements FilmStorage {
                     "INNER JOIN film_director fd ON f.film_id = fd.film_id " +
                     "WHERE fd.director_id = ? " +
                     "ORDER BY f.release_date";
+    private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private static final String GET_FILMS_BY_DIRECTOR_SORT_BY_LIKES =
             "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name " +
