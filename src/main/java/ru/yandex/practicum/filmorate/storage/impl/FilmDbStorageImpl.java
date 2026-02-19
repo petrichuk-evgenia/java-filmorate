@@ -38,7 +38,6 @@ public class FilmDbStorageImpl implements FilmStorage {
                     "INNER JOIN film_director fd ON f.film_id = fd.film_id " +
                     "WHERE fd.director_id = ? " +
                     "ORDER BY f.release_date";
-    private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private static final String GET_FILMS_BY_DIRECTOR_SORT_BY_LIKES =
             "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name " +
@@ -296,6 +295,22 @@ public class FilmDbStorageImpl implements FilmStorage {
         }
     }
 
+    public List<Genre> getGenresForFilm(Long filmId) {
+        String sql = "SELECT g.genre_id AS id, g.name " +
+                "FROM genres g " +
+                "INNER JOIN film_genres fg ON g.genre_id = fg.genre_id " +
+                "WHERE fg.film_id = ? " +
+                "ORDER BY g.genre_id";
+        try {
+            return jdbcTemplate.query(sql, (rs, rowNum) -> Genre.builder()
+                    .id(rs.getLong("id"))
+                    .name(rs.getString("name"))
+                    .build(), filmId);
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
+        }
+    }
+
     Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Mpa mpa = null;
         Long mpaId = rs.getLong("mpa_id");
@@ -324,25 +339,6 @@ public class FilmDbStorageImpl implements FilmStorage {
             film.setDirectors(new HashSet<>(directors));
         }
         return film;
-    }
-
-    public List<Genre> getGenresForFilm(Long filmId) {
-        String sql = "SELECT g.genre_id AS id, g.name " +
-                "FROM genres g " +
-                "INNER JOIN film_genres fg ON g.genre_id = fg.genre_id " +
-                "WHERE fg.film_id = ? " +
-                "ORDER BY g.genre_id";
-        try {
-            return jdbcTemplate.query(sql, (rs, rowNum) -> Genre.builder()
-                    .id(rs.getLong("genre_id"))
-                    .name(rs.getString("name"))
-                    .build(), filmId);
-        } catch (EmptyResultDataAccessException e) {
-            return Collections.emptyList();
-        }
-
-/*        film.setDirectors(new HashSet<>(getDirectorsForFilm(film.getId())));
-        return film;*/
     }
 
     public List<Director> getDirectorsForFilm(Long filmId) {
