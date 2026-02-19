@@ -388,6 +388,10 @@ public class FilmDbStorageImpl implements FilmStorage {
             return recommendations;
         } catch (Exception e) {
             log.error("Ошибка при загрузке рекомендованных фильмов: {}", e.getMessage());
+        }
+        return Collections.emptyList();
+    }
+
     private Film enrichFilm(Film film) {
         film.setDirectors(new HashSet<>(getDirectorsForFilm(film.getId())));
         return film;

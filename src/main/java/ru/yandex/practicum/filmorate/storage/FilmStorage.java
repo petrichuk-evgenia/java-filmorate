@@ -37,7 +37,7 @@ public interface FilmStorage {
      * Получаем рекомендации для пользака на основе похожих пользаков
      */
     List<Film> getRecommendations(Long userId);
-    
+
     List<Film> getFilmsByDirector(Long directorId, String sortBy);
 
     Film deleteFilm(Long id);
