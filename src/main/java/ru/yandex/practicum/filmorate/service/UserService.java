@@ -137,6 +137,9 @@ public class UserService {
 
     public List<Film> getCommonFilms(Long userId, Long otherId) {
         return userStorage.getCommonFilms(userId, otherId);
+    public User deleteUser(Long userId) {
+        log.info("Удаление пользователя с ID: {}", userId);
+        return userStorage.deleteUser(userId);
     }
 
     private List<User> enrichUsersWithFriends(List<User> users) {

@@ -28,4 +28,5 @@ public interface UserStorage {
     void deleteUser(Long id);
 
     List<Film> getCommonFilms(Long userId, Long otherId);
+    User deleteUser(Long id);
 }

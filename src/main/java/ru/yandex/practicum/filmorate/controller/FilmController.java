@@ -74,5 +74,10 @@ public class FilmController {
             @RequestParam Long friendId) {
         log.info("GET /films/common?userId={}&friendId={} - получение общих фильмов", userId, friendId);
         return userService.getCommonFilms(userId, friendId);
+      
+    @DeleteMapping("/{id}")
+    public Film deleteFilm(@PathVariable Long id) {
+        log.info("DELETE /films/{} - удаление фильма", id);
+        return filmService.deleteFilm(id);
     }
 }
