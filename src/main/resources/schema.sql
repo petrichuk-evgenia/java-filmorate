@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS review_feedback;
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS film_director;
+DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS film_genres;
 DROP TABLE IF EXISTS likes;
 DROP TABLE IF EXISTS friendships;
