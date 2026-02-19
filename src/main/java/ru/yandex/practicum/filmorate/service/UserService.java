@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.CustomValidationExpression;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -132,6 +133,16 @@ public class UserService {
         log.debug("Запрос на получение общих друзей пользователей {} и {}", userId, otherId);
         List<User> commonFriends = userStorage.getCommonFriends(userId, otherId);
         return enrichUsersWithFriends(commonFriends);
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long otherId) {
+        return userStorage.getCommonFilms(userId, otherId);
+    }
+
+
+    public User deleteUser(Long userId) {
+        log.info("Удаление пользователя с ID: {}", userId);
+        return userStorage.deleteUser(userId);
     }
 
     private List<User> enrichUsersWithFriends(List<User> users) {

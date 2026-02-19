@@ -80,4 +80,10 @@ public class UserController {
         log.info("GET /users/{}/recommendations - получение рекомендаций для пользователя", id);
         return filmService.getRecommendations(id);
     }
+      
+    @DeleteMapping("/{id}")
+    public User deleteUser(@PathVariable Long id) {
+        log.info("DELETE /users/{} - удаление пользователя", id);
+        return userService.deleteUser(id);
+    }
 }

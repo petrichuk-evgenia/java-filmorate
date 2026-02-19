@@ -23,8 +23,6 @@ public interface FilmStorage {
 
     boolean existsById(Long id);
 
-    void deleteFilm(Long id);
-
     /**
      * Получаем список ID пользаков, которые поставили лайки фильму
      */
@@ -39,4 +37,8 @@ public interface FilmStorage {
      * Получаем рекомендации для пользака на основе похожих пользаков
      */
     List<Film> getRecommendations(Long userId);
+    
+    List<Film> getFilmsByDirector(Long directorId, String sortBy);
+
+    Film deleteFilm(Long id);
 }
