@@ -24,6 +24,8 @@ import java.util.Optional;
 @Component("userDbStorage")
 @Primary
 public class UserDbStorageImpl implements UserStorage {
+    private static final String DELETE_QUERY = "DELETE FROM users WHERE user_id = ?";
+
     private final JdbcTemplate jdbcTemplate;
 
     public UserDbStorageImpl(JdbcTemplate jdbcTemplate) {
@@ -141,7 +143,13 @@ public class UserDbStorageImpl implements UserStorage {
     }
 
     @Override
-    public void deleteUser(Long id) {
+    public User deleteUser(Long id) {
+        Optional<User> user = getUserById(id);
+        if (!user.isPresent()) {
+            throw new IdNotFoundException("Пользователь с ID " + id + " не найден");
+        }
+        jdbcTemplate.update(DELETE_QUERY, id);
+        return user.get();
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {

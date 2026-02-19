@@ -134,6 +134,11 @@ public class UserService {
         return enrichUsersWithFriends(commonFriends);
     }
 
+    public User deleteUser(Long userId) {
+        log.info("Удаление пользователя с ID: {}", userId);
+        return userStorage.deleteUser(userId);
+    }
+
     private List<User> enrichUsersWithFriends(List<User> users) {
         if (users.isEmpty()) {
             return users;
