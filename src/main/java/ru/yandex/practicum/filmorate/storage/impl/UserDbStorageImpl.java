@@ -9,6 +9,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -16,9 +18,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component("userDbStorage")
@@ -27,9 +28,12 @@ public class UserDbStorageImpl implements UserStorage {
     private static final String DELETE_QUERY = "DELETE FROM users WHERE user_id = ?";
 
     private final JdbcTemplate jdbcTemplate;
+    private final FilmDbStorageImpl filmDbStorage;
+    private static final String GET_COMMON_FILMS_QUERY = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name, COALESCE(l.likes_count, 0) AS likes_count FROM films f INNER JOIN mpa_ratings m ON f.mpa_id = m.mpa_id LEFT JOIN (SELECT film_id, COUNT(*) AS likes_count FROM likes GROUP BY film_id) l ON f.film_id = l.film_id WHERE f.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) AND f.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) ORDER BY likes_count DESC, f.film_id";
 
-    public UserDbStorageImpl(JdbcTemplate jdbcTemplate) {
+    public UserDbStorageImpl(JdbcTemplate jdbcTemplate, FilmDbStorageImpl filmDbStorage) {
         this.jdbcTemplate = jdbcTemplate;
+        this.filmDbStorage = filmDbStorage;
     }
 
     @Override
@@ -150,6 +154,23 @@ public class UserDbStorageImpl implements UserStorage {
         }
         jdbcTemplate.update(DELETE_QUERY, id);
         return user.get();
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long otherId) {
+        if (!existsById(userId) || !existsById(otherId)) {
+            throw new IdNotFoundException("Пользователь не найден");
+        }
+
+        List<Film> films = jdbcTemplate.query(GET_COMMON_FILMS_QUERY, filmDbStorage::mapRowToFilm, userId, otherId);
+
+        return films.stream()
+                .map(film -> {
+                    List<Genre> genres = filmDbStorage.getGenresForFilm(film.getId());
+                    film.setGenres(new HashSet<>(genres));
+                    return film;
+                })
+                .collect(Collectors.toList());
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
