@@ -242,4 +242,20 @@ public class FilmService {
             throw new CustomValidationExpression("Продолжительность фильма должна быть положительным числом");
         }
     }
+
+    /**
+     * Получаем рекомендации фильмов для пользака
+     */
+    public List<Film> getRecommendations(Long userId) {
+        log.info("Получение рекомендаций для пользователя с ID: {}", userId);
+
+        // Проверяем существование пользака
+        userService.getUserById(userId);
+
+        // Получаем рекомендации из хранилища
+        List<Film> recommendations = filmStorage.getRecommendations(userId);
+
+        // Обогащаем рекомендации дополнительными данными
+        return enrichFilmsWithAdditionalData(recommendations);
+    }
 }

@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface FilmStorage {
     List<Film> getAllFilms();
@@ -21,6 +22,21 @@ public interface FilmStorage {
     List<Film> getPopularFilms(int count);
 
     boolean existsById(Long id);
+
+    /**
+     * Получаем список ID пользаков, которые поставили лайки фильму
+     */
+    Set<Long> getFilmLikes(Long filmId);
+
+    /**
+     * Получаем список ID фильмов, которые лайкнул пользак
+     */
+    Set<Long> getUserLikes(Long userId);
+
+    /**
+     * Получаем рекомендации для пользака на основе похожих пользаков
+     */
+    List<Film> getRecommendations(Long userId);
 
     List<Film> getFilmsByDirector(Long directorId, String sortBy);
 
