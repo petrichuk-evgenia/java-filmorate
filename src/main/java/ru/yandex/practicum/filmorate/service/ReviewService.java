@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.impl.ReviewDbStorage;
@@ -15,13 +17,16 @@ public class ReviewService {
     private final ReviewDbStorage reviewRepository;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final EventStorage eventStorage;
 
-    public ReviewService(ReviewDbStorage reviewRepository,
+    public ReviewService(@Qualifier("reviewDbStorage") ReviewDbStorage reviewRepository,
                          @Qualifier("userDbStorage") UserStorage userStorage,
-                         @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+                         @Qualifier("filmDbStorage") FilmStorage filmStorage,
+                         @Qualifier("eventDbStorage") EventStorage eventStorage) {
         this.reviewRepository = reviewRepository;
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.eventStorage = eventStorage;
     }
 
     public Review addReview(Review review) {
@@ -31,6 +36,7 @@ public class ReviewService {
         if (!filmStorage.existsById(review.getFilmId()) || review.getFilmId() <= 0) {
             throw new IdNotFoundException("Film not found: " + review.getUserId());
         }
+        eventStorage.addReviewEvent(review.getUserId(), review.getReviewId(), Operation.ADD);
         return reviewRepository.save(review);
     }
 
@@ -38,10 +44,13 @@ public class ReviewService {
         if (reviewRepository.getById(review.getReviewId()).isEmpty()) {
             throw new IdNotFoundException("Review not found");
         }
+        eventStorage.addReviewEvent(review.getUserId(), review.getReviewId(), Operation.UPDATE);
         return reviewRepository.update(review);
     }
 
     public void deleteReview(Long id) {
+        Review review = getReviewById(id);
+        eventStorage.addReviewEvent(review.getUserId(), review.getReviewId(), Operation.REMOVE);
         reviewRepository.deleteById(id);
     }
 
