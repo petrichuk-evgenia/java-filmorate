@@ -19,6 +19,7 @@ public class Review {
     @NotBlank(message = "Content cannot be blank")
     private String content;
 
+    @NotNull(message = "isPositive cannot be null")
     private Boolean isPositive;
 
     @NotNull(message = "UserId cannot be null")

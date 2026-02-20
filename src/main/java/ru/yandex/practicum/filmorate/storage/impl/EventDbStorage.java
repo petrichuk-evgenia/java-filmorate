@@ -28,6 +28,9 @@ public class EventDbStorage implements EventStorage {
 
     @Override
     public void addEvent(Event event) {
+        log.debug("Добавление события: userId={}, eventType={}, operation={}, entityId={}, timestamp={}",
+                event.getUserId(), event.getEventType(), event.getOperation(), event.getEntityId(), event.getTimestamp());
+
         String sql = "INSERT INTO events (user_id, timestamp, event_type, operation, entity_id) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
@@ -46,13 +49,13 @@ public class EventDbStorage implements EventStorage {
         Long eventId = Objects.requireNonNull(keyHolder.getKey()).longValue();
         event.setEventId(eventId);
 
-        log.info("Событие {} добавлено с ID: {}", event.getEventType(), eventId);
+        log.info("Событие {} с ID {} успешно добавлено: userId={}, eventType={}, operation={}, entityId={}",
+                event.getEventType(), eventId, event.getUserId(), event.getEventType(), event.getOperation(), event.getEntityId());
     }
 
     @Override
     public List<Event> getUserFeed(Long userId) {
-        String sql = "SELECT * FROM events WHERE user_id = ? ORDER BY timestamp DESC";
-
+        String sql = "SELECT * FROM events WHERE user_id = ? ORDER BY sequence ASC, event_id ASC";
         log.debug("Получение ленты событий для пользователя с ID: {}", userId);
         return jdbcTemplate.query(sql, this::mapRowToEvent, userId);
     }
