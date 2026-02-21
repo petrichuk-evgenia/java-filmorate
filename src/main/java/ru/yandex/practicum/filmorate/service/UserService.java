@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.CustomValidationExpression;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.HashSet;
@@ -22,12 +22,15 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userStorage;
     private final UserDataLoader userDataLoader;
+    private final EventStorage eventStorage;
 
     public UserService(
             @Qualifier("userDbStorage") UserStorage userStorage,
-            UserDataLoader userDataLoader) {
+            UserDataLoader userDataLoader,
+            EventStorage eventStorage) {
         this.userStorage = userStorage;
         this.userDataLoader = userDataLoader;
+        this.eventStorage = eventStorage;
     }
 
     public List<User> getAllUsers() {
@@ -91,6 +94,16 @@ public class UserService {
         validateFriendship(userId, friendId);
 
         userStorage.addFriend(userId, friendId);
+
+        Event event = Event.builder()
+                .userId(userId)
+                .timestamp(System.currentTimeMillis())
+                .eventType(EventType.FRIEND)
+                .operation(Operation.ADD)
+                .entityId(friendId)
+                .build();
+        eventStorage.addEvent(event);
+
         log.info("Пользователь {} успешно добавил в друзья пользователя {}", userId, friendId);
     }
 
@@ -114,6 +127,16 @@ public class UserService {
         }
 
         userStorage.removeFriend(userId, friendId);
+
+        Event event = Event.builder()
+                .userId(userId)
+                .timestamp(System.currentTimeMillis())
+                .eventType(EventType.FRIEND)
+                .operation(Operation.REMOVE)
+                .entityId(friendId)
+                .build();
+        eventStorage.addEvent(event);
+
         log.info("Операция удаления дружбы между {} и {} завершена", userId, friendId);
     }
 

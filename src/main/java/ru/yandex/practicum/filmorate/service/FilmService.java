@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.CustomValidationExpression;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -106,10 +103,18 @@ public class FilmService {
 
         filmStorage.addLike(filmId, userId);
 
-        eventStorage.addLikeEvent(userId, filmId, Operation.ADD);
+        Event event = Event.builder()
+                .userId(userId)
+                .timestamp(System.currentTimeMillis())
+                .eventType(EventType.LIKE)
+                .operation(Operation.ADD)
+                .entityId(filmId)
+                .build();
+        eventStorage.addEvent(event);
 
         log.info("Лайк успешно добавлен");
     }
+
 
     public void removeLike(Long filmId, Long userId) {
         log.info("Удаление лайка фильму {} от пользователя {}", filmId, userId);
@@ -123,7 +128,15 @@ public class FilmService {
 
         filmStorage.removeLike(filmId, userId);
 
-        eventStorage.addLikeEvent(userId, filmId, Operation.REMOVE);
+        // Исправлено: используем правильный entityId (filmId) и Operation.REMOVE
+        Event event = Event.builder()
+                .userId(userId)
+                .timestamp(System.currentTimeMillis())
+                .eventType(EventType.LIKE)
+                .operation(Operation.REMOVE)
+                .entityId(filmId)
+                .build();
+        eventStorage.addEvent(event);
 
         log.info("Лайк успешно удален");
     }

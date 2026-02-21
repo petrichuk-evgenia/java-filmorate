@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -91,7 +92,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/feed")
-    public List<Event> getUserFeed(@PathVariable Long id) {
+    public List<Event> getUserFeed(@PathVariable @NonNull Long id) {
         log.info("GET /users/{}/feed - получение ленты событий пользователя", id);
         return eventService.getUserFeed(id);
     }
