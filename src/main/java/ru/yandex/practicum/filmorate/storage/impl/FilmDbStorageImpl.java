@@ -77,8 +77,15 @@ public class FilmDbStorageImpl implements FilmStorage {
 
     @Override
     public List<Film> getAllFilms() {
-        String sql = "SELECT f.*, m.name as mpa_name FROM films f " +
-                "LEFT JOIN mpa_ratings m ON f.mpa_id = m.mpa_id";
+        /*String sql = "SELECT f.*, m.name as mpa_name FROM films f " +
+                "LEFT JOIN mpa_ratings m ON f.mpa_id = m.mpa_id";*/
+        String sql = "SELECT f.*, m.name AS mpa_name, " +
+                "d.director_id, d.name AS director_name " +
+                "FROM films f " +
+                "LEFT JOIN mpa_ratings m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN film_director fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN director d ON fd.director_id = d.director_id " +
+                "ORDER BY f.film_id";
 
         return jdbcTemplate.query(sql, this::mapRowToFilm);
     }
