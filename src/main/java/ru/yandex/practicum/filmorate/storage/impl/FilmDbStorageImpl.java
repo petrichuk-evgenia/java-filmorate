@@ -187,12 +187,29 @@ public class FilmDbStorageImpl implements FilmStorage {
         }
     }
 
-    @Override
+    /*@Override
     public void addLike(Long filmId, Long userId) {
         String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
 
         if (jdbcTemplate.update(sql, filmId, userId) > 0) {
             log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
+        }
+    }*/
+
+    @Override
+    public void addLike(Long filmId, Long userId) {
+        String sql = "INSERT INTO likes (film_id, user_id) " +
+                "SELECT ?, ? " +
+                "WHERE NOT EXISTS (" +
+                "    SELECT 1 FROM likes WHERE film_id = ? AND user_id = ?" +
+                ")";
+
+        int updated = jdbcTemplate.update(sql, filmId, userId, filmId, userId);
+
+        if (updated > 0) {
+            log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
+        } else {
+            log.debug("Пользователь {} уже поставил лайк фильму {}", userId, filmId);
         }
     }
 
