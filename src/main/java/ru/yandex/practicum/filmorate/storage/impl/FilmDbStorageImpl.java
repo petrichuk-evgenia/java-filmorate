@@ -75,10 +75,16 @@ public class FilmDbStorageImpl implements FilmStorage {
         this.directorDbStorage = directorDbStorage;
     }
 
+    /*@Override
+    public List<Film> getAllFilms() {
+        String sql = "SELECT f.*, m.name as mpa_name FROM films f " +
+                "LEFT JOIN mpa_ratings m ON f.mpa_id = m.mpa_id";
+
+        return jdbcTemplate.query(sql, this::mapRowToFilm);
+    }*/
+
     @Override
     public List<Film> getAllFilms() {
-        /*String sql = "SELECT f.*, m.name as mpa_name FROM films f " +
-                "LEFT JOIN mpa_ratings m ON f.mpa_id = m.mpa_id";*/
         String sql = "SELECT f.*, m.name AS mpa_name, " +
                 "d.director_id, d.name AS director_name " +
                 "FROM films f " +
@@ -87,7 +93,27 @@ public class FilmDbStorageImpl implements FilmStorage {
                 "LEFT JOIN director d ON fd.director_id = d.director_id " +
                 "ORDER BY f.film_id";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
+        return jdbcTemplate.query(sql, rs -> {
+            Map<Long, Film> filmsMap = new LinkedHashMap<>();
+            while (rs.next()) {
+                Long filmId = rs.getLong("film_id");
+                Film film = filmsMap.get(filmId);
+                if (film == null) {
+                    film = mapRowToFilm(rs, 0);
+                    filmsMap.put(filmId, film);
+                }
+
+                Long directorId = rs.getObject("director_id", Long.class);
+                if (directorId != null) {
+                    Director director = Director.builder()
+                            .id(directorId)
+                            .name(rs.getString("director_name"))
+                            .build();
+                    film.getDirectors().add(director);
+                }
+            }
+            return new ArrayList<>(filmsMap.values());
+        });
     }
 
     @Override
