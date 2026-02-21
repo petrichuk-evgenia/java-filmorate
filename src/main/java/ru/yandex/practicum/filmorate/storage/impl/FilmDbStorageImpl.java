@@ -189,10 +189,18 @@ public class FilmDbStorageImpl implements FilmStorage {
 
     /*@Override
     public void addLike(Long filmId, Long userId) {
-        String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+        String sql = "INSERT INTO likes (film_id, user_id) " +
+                "SELECT ?, ? " +
+                "WHERE NOT EXISTS (" +
+                "    SELECT 1 FROM likes WHERE film_id = ? AND user_id = ?" +
+                ")";
 
-        if (jdbcTemplate.update(sql, filmId, userId) > 0) {
+        int updated = jdbcTemplate.update(sql, filmId, userId, filmId, userId);
+
+        if (updated > 0) {
             log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
+        } else {
+            log.debug("Пользователь {} уже поставил лайк фильму {}", userId, filmId);
         }
     }*/
 
@@ -288,8 +296,8 @@ public class FilmDbStorageImpl implements FilmStorage {
         sql.append("    m.mpa_id, ");
         sql.append("    m.name AS mpa_name, ");
         sql.append("    COALESCE(lm.likes_count, 0) AS likes_count, ");
-        sql.append("    d.director_id, ");
-        sql.append("    d.name AS director_name ");
+        sql.append("    GROUP_CONCAT(d.director_id) AS director_ids, ");
+        sql.append("    GROUP_CONCAT(d.name) AS director_names ");
         sql.append("FROM films f ");
         sql.append("JOIN mpa_ratings m ON f.mpa_id = m.mpa_id ");
         sql.append("LEFT JOIN ( ");
@@ -310,6 +318,9 @@ public class FilmDbStorageImpl implements FilmStorage {
             sql.append("AND EXTRACT(YEAR FROM f.release_date) = ? ");
         }
 
+        sql.append("GROUP BY ");
+        sql.append("    f.film_id, f.name, f.description, f.release_date, f.duration, ");
+        sql.append("    m.mpa_id, m.name, lm.likes_count ");
         sql.append("ORDER BY likes_count DESC, f.film_id ");
         sql.append("LIMIT ?");
 
