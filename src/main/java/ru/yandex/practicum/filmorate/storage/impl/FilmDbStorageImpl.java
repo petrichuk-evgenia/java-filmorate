@@ -226,7 +226,7 @@ public class FilmDbStorageImpl implements FilmStorage {
         return jdbcTemplate.query(sql, this::mapRowToFilm, year, genreId, genreId, count);
     }*/
 
-    @Override
+/*    @Override
     public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         StringBuilder sql = new StringBuilder(
                 "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
@@ -250,6 +250,51 @@ public class FilmDbStorageImpl implements FilmStorage {
         sql.append("GROUP BY f.film_id, m.mpa_id, m.name ")
                 .append("ORDER BY likes_count DESC, f.film_id ")
                 .append("LIMIT ?");
+
+        List<Object> params = new ArrayList<>();
+        if (genreId != null) params.add(genreId);
+        if (year != null) params.add(year);
+        params.add(count);
+
+        return jdbcTemplate.query(sql.toString(), this::mapRowToFilm, params.toArray());
+    }*/
+
+    @Override
+    public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT ");
+        sql.append("    f.film_id, ");
+        sql.append("    f.name, ");
+        sql.append("    f.description, ");
+        sql.append("    f.release_date, ");
+        sql.append("    f.duration, ");
+        sql.append("    m.mpa_id, ");
+        sql.append("    m.name AS mpa_name, ");
+        sql.append("    COALESCE(lm.likes_count, 0) AS likes_count, ");
+        sql.append("    d.director_id, ");
+        sql.append("    d.name AS director_name ");
+        sql.append("FROM films f ");
+        sql.append("JOIN mpa_ratings m ON f.mpa_id = m.mpa_id ");
+        sql.append("LEFT JOIN ( ");
+        sql.append("    SELECT film_id, COUNT(user_id) AS likes_count ");
+        sql.append("    FROM likes ");
+        sql.append("    GROUP BY film_id ");
+        sql.append(") lm ON f.film_id = lm.film_id ");
+        sql.append("INNER JOIN film_genres fg ON f.film_id = fg.film_id ");
+        sql.append("INNER JOIN genres g ON fg.genre_id = g.genre_id ");
+        sql.append("LEFT JOIN film_director fd ON f.film_id = fd.film_id ");
+        sql.append("LEFT JOIN director d ON fd.director_id = d.director_id ");
+        sql.append("WHERE 1=1 ");
+
+        if (genreId != null) {
+            sql.append("AND g.genre_id = ? ");
+        }
+        if (year != null) {
+            sql.append("AND EXTRACT(YEAR FROM f.release_date) = ? ");
+        }
+
+        sql.append("ORDER BY likes_count DESC, f.film_id ");
+        sql.append("LIMIT ?");
 
         List<Object> params = new ArrayList<>();
         if (genreId != null) params.add(genreId);
