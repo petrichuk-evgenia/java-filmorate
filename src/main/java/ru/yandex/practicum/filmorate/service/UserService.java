@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.CustomValidationExpression;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Operation;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -96,7 +94,16 @@ public class UserService {
         validateFriendship(userId, friendId);
 
         userStorage.addFriend(userId, friendId);
-        eventStorage.addFriendEvent(userId, friendId, Operation.ADD);
+
+        Event event = Event.builder()
+                .userId(userId)
+                .timestamp(System.currentTimeMillis())
+                .eventType(EventType.FRIEND)
+                .operation(Operation.ADD)
+                .entityId(friendId)
+                .build();
+        eventStorage.addEvent(event);
+
         log.info("Пользователь {} успешно добавил в друзья пользователя {}", userId, friendId);
     }
 
@@ -120,7 +127,16 @@ public class UserService {
         }
 
         userStorage.removeFriend(userId, friendId);
-        eventStorage.addFriendEvent(userId, friendId, Operation.REMOVE);
+
+        Event event = Event.builder()
+                .userId(userId)
+                .timestamp(System.currentTimeMillis())
+                .eventType(EventType.FRIEND)
+                .operation(Operation.REMOVE)
+                .entityId(friendId)
+                .build();
+        eventStorage.addEvent(event);
+
         log.info("Операция удаления дружбы между {} и {} завершена", userId, friendId);
     }
 
