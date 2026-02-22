@@ -10,8 +10,5 @@ import lombok.Data;
 public class Director {
 
     private Long id;
-
-    @NotBlank(message = "Логин не может быть пустым")
-    @Pattern(regexp = "\\S+", message = "Логин не может содержать пробелы")
     private String name;
 }

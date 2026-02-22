@@ -30,7 +30,7 @@ public class DirectorController {
     }
 
     @PostMapping
-    public Director createDirector(@RequestBody @NonNull Director director) {
+    public Director createDirector(@RequestBody @NonNull @Valid Director director) {
         return directorService.createDirector(director);
     }
 
