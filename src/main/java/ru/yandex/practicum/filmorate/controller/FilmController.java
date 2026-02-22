@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -20,6 +22,8 @@ public class FilmController {
 
     private final FilmService filmService;
     private final UserService userService;
+    private final DirectorService directorService;
+
 
     @GetMapping
     public List<Film> getAllFilms() {
@@ -74,8 +78,9 @@ public class FilmController {
     public List<Film> getFilmsByDirector(
             @PathVariable Long directorId,
             @RequestParam(required = false, defaultValue = "year") String sortBy) {
+        Director director = directorService.getDirectorById(directorId);
         log.info("GET /films/director/{}?sortBy={} - получение фильмов по режиссёру", directorId, sortBy);
-        return filmService.getFilmsByDirector(directorId, sortBy);
+        return filmService.getFilmsByDirector(director.getId(), sortBy);
     }
 
     @GetMapping("/search")
