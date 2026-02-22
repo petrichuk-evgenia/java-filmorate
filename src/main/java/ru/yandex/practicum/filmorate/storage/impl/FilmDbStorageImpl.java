@@ -239,11 +239,11 @@ public class FilmDbStorageImpl implements FilmStorage {
 
         sql.append("FROM films f ")
                 .append("JOIN mpa_ratings m ON f.mpa_id = m.mpa_id ")
-                .append("LEFT JOIN likes l ON f.film_id = l.film_id ")
-                .append("INNER JOIN film_genres fg ON f.film_id = fg.film_id ");
+                .append("LEFT JOIN likes l ON f.film_id = l.film_id ");
 
         if (genreId != null) {
-            sql.append("INNER JOIN genres g ON fg.genre_id = g.genre_id ");
+            sql.append("INNER JOIN film_genres fg ON f.film_id = fg.film_id ")
+                    .append("INNER JOIN genres g ON fg.genre_id = g.genre_id ");
         }
 
         sql.append("WHERE 1=1 ");
