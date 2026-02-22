@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.CustomValidationExpression;
 import ru.yandex.practicum.filmorate.exceptions.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -25,6 +26,7 @@ public class FilmService {
     private final GenreService genreService;
     private final UserService userService;
     private final EventStorage eventStorage;
+    private final DirectorStorage directorStorage;
 
     public FilmService(
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
@@ -32,13 +34,15 @@ public class FilmService {
             MpaService mpaService,
             GenreService genreService,
             UserService userService,
-            EventStorage eventStorage) {
+            EventStorage eventStorage,
+            DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.filmDataLoader = filmDataLoader;
         this.mpaService = mpaService;
         this.genreService = genreService;
         this.userService = userService;
         this.eventStorage = eventStorage;
+        this.directorStorage = directorStorage;
     }
 
     public List<Film> getAllFilms() {
@@ -173,6 +177,8 @@ public class FilmService {
 
         Map<Long, Mpa> allMpaMap = mpaService.getAllMpaMap();
 
+
+
         for (Film film : films) {
 
             Set<Long> genreIds = filmGenreIdsMap.getOrDefault(film.getId(), new LinkedHashSet<>());
@@ -214,6 +220,8 @@ public class FilmService {
         film.setLikes(filmDataLoader.loadLikesForFilm(film.getId()));
 
         film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
+
+        film.setDirectors(new HashSet<>(filmStorage.getDirectorsForFilm(film.getId())));
 
         return film;
     }
