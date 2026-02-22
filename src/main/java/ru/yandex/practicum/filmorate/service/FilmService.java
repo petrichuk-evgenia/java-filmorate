@@ -145,14 +145,6 @@ public class FilmService {
         log.info("Лайк успешно удален");
     }
 
-    public List<Film> getPopularFilms(Integer count) {
-        int limit = (count != null && count > 0) ? count : 10;
-        log.info("Запрос на получение {} популярных фильмов указанного жанра за нужный год", limit);
-
-        List<Film> popularFilms = filmStorage.getPopularFilms(limit);
-        return enrichFilmsWithAdditionalData(popularFilms);
-    }
-
     public List<Film> getPopularFilmsByYearAndGenre(Integer count, Integer genreId, Integer year) {
         int limit = (count != null && count > 0) ? count : 10;
         log.info("Запрос на получение {} популярных фильмов указанного жанра за нужный год", limit);

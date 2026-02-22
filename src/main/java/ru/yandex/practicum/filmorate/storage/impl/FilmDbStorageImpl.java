@@ -231,16 +231,6 @@ public class FilmDbStorageImpl implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-        String sql = "SELECT f.*, m.name as mpa_name, COUNT(l.user_id) as likes_count " +
-                "GROUP BY f.film_id, m.name " +
-                "ORDER BY likes_count DESC " +
-                "LIMIT ?";
-
-        return jdbcTemplate.query(sql, this::mapRowToFilm, count);
-    }
-
-    @Override
     public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         StringBuilder sql = new StringBuilder(
                 "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +

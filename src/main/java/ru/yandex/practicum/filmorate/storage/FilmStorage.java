@@ -22,8 +22,6 @@ public interface FilmStorage {
 
     List<Film> getPopularFilms(int count, Integer genreId, Integer year);
 
-    List<Film> getPopularFilms(int count);
-
     boolean existsById(Long id);
 
     /**
