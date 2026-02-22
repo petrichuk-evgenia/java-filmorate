@@ -251,7 +251,7 @@ public class FilmDbStorageImpl implements FilmStorage {
         return jdbcTemplate.query(sql, this::mapRowToFilm, year, genreId, genreId, count);
     }*/
 
-/*    @Override
+    @Override
     public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         StringBuilder sql = new StringBuilder(
                 "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
@@ -282,9 +282,9 @@ public class FilmDbStorageImpl implements FilmStorage {
         params.add(count);
 
         return jdbcTemplate.query(sql.toString(), this::mapRowToFilm, params.toArray());
-    }*/
+    }
 
-    @Override
+    /*@Override
     public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT ");
@@ -330,7 +330,7 @@ public class FilmDbStorageImpl implements FilmStorage {
         params.add(count);
 
         return jdbcTemplate.query(sql.toString(), this::mapRowToFilm, params.toArray());
-    }
+    }*/
 
     @Override
     public boolean existsById(Long id) {
