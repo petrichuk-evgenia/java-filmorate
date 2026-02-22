@@ -246,7 +246,10 @@ public class FilmDbStorageImpl implements FilmStorage {
 
         if (genreId != null) {
             sql.append("AND g.genre_id = ? ");
+        }else {
+            sql.append("AND g.genre_id = 1 ");
         }
+
         if (year != null) {
             sql.append("AND EXTRACT(YEAR FROM f.release_date) = ? ");
         }
