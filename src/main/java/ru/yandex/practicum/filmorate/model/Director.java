@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,5 +9,7 @@ import lombok.Data;
 public class Director {
 
     private Long id;
+
+    @NotBlank(message = "Логин не может быть пустым")
     private String name;
 }
