@@ -66,9 +66,9 @@ public class FilmController {
             @RequestParam(defaultValue = "10") Integer count,
             @RequestParam(required = false) Integer genreId,
             @RequestParam(required = false) Integer year) {
-        if(genreId == null && year == null){
+        if (genreId == null && year == null) {
             return filmService.getPopularFilms(count);
-        }else {
+        } else {
             log.info("GET /films/popular?count={}&genreId={}&year={} - получение популярных фильмов  указанного жанра за нужный год", count, genreId, year);
             return filmService.getPopularFilmsByYearAndGenre(count, genreId, year);
         }
