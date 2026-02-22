@@ -25,7 +25,6 @@ public class FilmService {
     private final GenreService genreService;
     private final UserService userService;
     private final EventStorage eventStorage;
-    private final DirectorService directorService;
 
     public FilmService(
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
@@ -33,15 +32,13 @@ public class FilmService {
             MpaService mpaService,
             GenreService genreService,
             UserService userService,
-            EventStorage eventStorage,
-            DirectorService directorService) {
+            EventStorage eventStorage) {
         this.filmStorage = filmStorage;
         this.filmDataLoader = filmDataLoader;
         this.mpaService = mpaService;
         this.genreService = genreService;
         this.userService = userService;
         this.eventStorage = eventStorage;
-        this.directorService = directorService;
     }
 
     public List<Film> getAllFilms() {
@@ -176,14 +173,8 @@ public class FilmService {
 
         Map<Long, Mpa> allMpaMap = mpaService.getAllMpaMap();
 
-        // Загружаем соответствие filmId -> множество directorId
-        Map<Long, Set<Long>> filmDirectorIdsMap = filmDataLoader.loadDirectorsForFilms(filmIds);
-        // Получаем все режиссёры и строим карту по id
-        Map<Long, Director> allDirectorsMap = directorService.getAllDirectors().stream()
-                .collect(Collectors.toMap(Director::getId, d -> d));
-
         for (Film film : films) {
-            // Жанры
+
             Set<Long> genreIds = filmGenreIdsMap.getOrDefault(film.getId(), new LinkedHashSet<>());
             Set<Genre> genres = genreIds.stream()
                     .map(allGenresMap::get)
@@ -191,10 +182,8 @@ public class FilmService {
                     .collect(Collectors.toCollection(LinkedHashSet::new));
             film.setGenres(genres);
 
-            // Лайки
             film.setLikes(filmLikesMap.getOrDefault(film.getId(), new HashSet<>()));
 
-            // Рейтинг MPA
             if (film.getMpa() != null && film.getMpa().getId() != null) {
                 Mpa fullMpa = allMpaMap.get(film.getMpa().getId());
                 if (fullMpa != null) {
@@ -203,58 +192,10 @@ public class FilmService {
                     film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
                 }
             }
-
-            // Режиссёры
-            Set<Long> directorIds = filmDirectorIdsMap.getOrDefault(film.getId(), new HashSet<>());
-            Set<Director> directors = directorIds.stream()
-                    .map(allDirectorsMap::get)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-            film.setDirectors(directors);
         }
 
         return films;
     }
-
-/*    private List<Film> enrichFilmsWithAdditionalData(List<Film> films) {
-        if (films.isEmpty()) {
-            return films;
-        }
-
-        List<Long> filmIds = films.stream()
-                .map(Film::getId)
-                .collect(Collectors.toList());
-
-        Map<Long, Set<Long>> filmGenreIdsMap = filmDataLoader.loadGenresForFilms(filmIds);
-        Map<Long, Genre> allGenresMap = genreService.getAllGenresMap();
-
-        Map<Long, Set<Long>> filmLikesMap = filmDataLoader.loadLikesForFilms(filmIds);
-
-        Map<Long, Mpa> allMpaMap = mpaService.getAllMpaMap();
-
-        for (Film film : films) {
-
-            Set<Long> genreIds = filmGenreIdsMap.getOrDefault(film.getId(), new LinkedHashSet<>());
-            Set<Genre> genres = genreIds.stream()
-                    .map(allGenresMap::get)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-            film.setGenres(genres);
-
-            film.setLikes(filmLikesMap.getOrDefault(film.getId(), new HashSet<>()));
-
-            if (film.getMpa() != null && film.getMpa().getId() != null) {
-                Mpa fullMpa = allMpaMap.get(film.getMpa().getId());
-                if (fullMpa != null) {
-                    film.setMpa(fullMpa);
-                } else {
-                    film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
-                }
-            }
-        }
-
-        return films;
-    }*/
 
     public Film deleteFilm(Long filmId) {
         return filmStorage.deleteFilm(filmId);

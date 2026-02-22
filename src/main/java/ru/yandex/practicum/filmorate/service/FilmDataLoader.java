@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.sql.PreparedStatement;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -123,37 +122,6 @@ public class FilmDataLoader {
 
                 result.computeIfAbsent(userId, k -> new HashSet<>())
                         .add(filmId);
-            }
-            return result;
-        });
-    }
-
-    public Map<Long, Set<Long>> loadDirectorsForFilms(List<Long> filmIds) {
-        if (filmIds.isEmpty()) {
-            return new HashMap<>();
-        }
-
-        String sql = String.format(
-                "SELECT film_id, director_id FROM film_directors " +
-                        "WHERE film_id IN (%s) " +
-                        "ORDER BY film_id, director_id",
-                String.join(",", Collections.nCopies(filmIds.size(), "?"))
-        );
-
-        return jdbcTemplate.query(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            for (int i = 0; i < filmIds.size(); i++) {
-                ps.setLong(i + 1, filmIds.get(i));
-            }
-            return ps;
-        }, rs -> {
-            Map<Long, Set<Long>> result = new HashMap<>();
-            while (rs.next()) {
-                Long filmId = rs.getLong("film_id");
-                Long directorId = rs.getLong("director_id");
-
-                result.computeIfAbsent(filmId, k -> new LinkedHashSet<>())
-                        .add(directorId);
             }
             return result;
         });
