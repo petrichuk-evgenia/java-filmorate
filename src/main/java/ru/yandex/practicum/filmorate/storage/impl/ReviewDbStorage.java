@@ -74,7 +74,7 @@ public class ReviewDbStorage {
 
     public List<Review> getAll(int count) {
         String sql = "SELECT * FROM reviews " +
-                //"ORDER BY useful DESC " +
+                "ORDER BY useful DESC " +
                 "LIMIT ?";
         return jdbcTemplate.query(sql, reviewRowMapper, count);
     }
