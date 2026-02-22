@@ -177,8 +177,6 @@ public class FilmService {
 
         Map<Long, Mpa> allMpaMap = mpaService.getAllMpaMap();
 
-
-
         for (Film film : films) {
 
             Set<Long> genreIds = filmGenreIdsMap.getOrDefault(film.getId(), new LinkedHashSet<>());
@@ -198,6 +196,8 @@ public class FilmService {
                     film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
                 }
             }
+
+            film.setDirectors(new HashSet<>(filmStorage.getDirectorsForFilm(film.getId())));
         }
 
         return films;
@@ -220,8 +220,6 @@ public class FilmService {
         film.setLikes(filmDataLoader.loadLikesForFilm(film.getId()));
 
         film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
-
-        film.setDirectors(new HashSet<>(filmStorage.getDirectorsForFilm(film.getId())));
 
         return film;
     }
