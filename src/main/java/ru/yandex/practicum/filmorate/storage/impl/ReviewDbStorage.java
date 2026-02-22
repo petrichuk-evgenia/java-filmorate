@@ -71,7 +71,7 @@ public class ReviewDbStorage {
 
     public List<Review> getByFilmId(Long filmId, int count) {
         String sql = "SELECT * FROM reviews WHERE film_id = ? " +
-                //"ORDER BY useful DESC, created_at DESC " +
+                "ORDER BY useful DESC " +
                 "LIMIT ?";
         return jdbcTemplate.query(sql, reviewRowMapper, filmId, count);
     }
