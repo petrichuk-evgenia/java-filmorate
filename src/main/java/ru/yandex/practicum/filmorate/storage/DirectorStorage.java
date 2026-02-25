@@ -14,5 +14,4 @@ public interface DirectorStorage {
     Director updateDirector(Director director);
 
     Director deleteDirector(Long id);
-
 }
