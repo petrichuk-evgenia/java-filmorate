@@ -79,4 +79,51 @@ public class FilmDataLoader {
         List<Long> userIds = jdbcTemplate.queryForList(sql, Long.class, filmId);
         return new HashSet<>(userIds);
     }
+
+    /**
+     * Загружаем лайки для всех пользаков (для анализа)
+     */
+    public Map<Long, Set<Long>> loadAllUserLikes() {
+        String sql = "SELECT user_id, film_id FROM likes ORDER BY user_id";
+
+        return jdbcTemplate.query(sql, rs -> {
+            Map<Long, Set<Long>> result = new HashMap<>();
+            while (rs.next()) {
+                Long userId = rs.getLong("user_id");
+                Long filmId = rs.getLong("film_id");
+
+                result.computeIfAbsent(userId, k -> new HashSet<>())
+                        .add(filmId);
+            }
+            return result;
+        });
+    }
+
+    /**
+     * Загружает лайки для конкретных пользаков
+     */
+    public Map<Long, Set<Long>> loadLikesForUsers(List<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        String sql = String.format(
+                "SELECT user_id, film_id FROM likes WHERE user_id IN (%s)",
+                userIds.stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(","))
+        );
+
+        return jdbcTemplate.query(sql, rs -> {
+            Map<Long, Set<Long>> result = new HashMap<>();
+            while (rs.next()) {
+                Long userId = rs.getLong("user_id");
+                Long filmId = rs.getLong("film_id");
+
+                result.computeIfAbsent(userId, k -> new HashSet<>())
+                        .add(filmId);
+            }
+            return result;
+        });
+    }
 }

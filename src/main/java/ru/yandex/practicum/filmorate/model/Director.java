@@ -1,15 +1,15 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class Genre {
+public class Director {
+
     private Long id;
+
+    @NotBlank(message = "Логин не может быть пустым")
     private String name;
 }
